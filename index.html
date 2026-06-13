@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SEA Matemáticas UIS · Asistencia</title>
+  <meta name="description" content="Sistema de registro de asistencia SEA Matemáticas - Universidad Industrial de Santander" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%233a5bd9'/><text x='4' y='23' font-family='sans-serif' font-weight='800' font-size='14' fill='white'>SEA</text></svg>" />
+</head>
+<body>
+
+<!-- ============================================================
+     PANTALLA LOGIN
+     ============================================================ -->
+<div id="screen-login" class="screen">
+  <div class="login-container">
+    <div class="login-logo">
+      <div class="logo-badge-big">SEA</div>
+      <h1>Sistema de Asistencia</h1>
+      <p>Matemáticas · Universidad Industrial de Santander</p>
+    </div>
+
+    <form id="form-login" class="login-form">
+      <div class="form-group">
+        <label for="login-email">Correo institucional</label>
+        <input type="email" id="login-email"
+               placeholder="usuario@uis.edu.co"
+               autocomplete="email"
+               required />
+      </div>
+      <button type="submit" class="btn btn-primary btn-full" id="btn-login">
+        Enviar enlace de acceso
+      </button>
+      <div id="login-message" class="login-message hidden"></div>
+    </form>
+
+    <p style="text-align:center;margin-top:24px;font-size:12px;color:#94a3b8">
+      Recibirás un enlace seguro en tu correo electrónico.
+    </p>
+  </div>
+</div>
+
+<!-- ============================================================
+     PANTALLA APP (autenticado)
+     ============================================================ -->
+<div id="screen-app" class="screen hidden">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <span class="logo-badge">SEA</span>
+        <span class="logo-text">Matemáticas</span>
+      </div>
+      <button class="sidebar-toggle" id="btn-sidebar-toggle" aria-label="Cerrar menú">✕</button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item" data-view="dashboard">
+        <span class="nav-icon">⊞</span>
+        <span>Dashboard</span>
+      </a>
+      <a href="#" class="nav-item" data-view="registro">
+        <span class="nav-icon">✓</span>
+        <span>Registro Asistencia</span>
+      </a>
+      <a href="#" class="nav-item" data-view="historial">
+        <span class="nav-icon">≡</span>
+        <span>Historial</span>
+      </a>
+      <a href="#" class="nav-item" data-view="estudiantes">
+        <span class="nav-icon">◉</span>
+        <span>Estudiantes</span>
+      </a>
+      <a href="#" class="nav-item" data-view="alertas">
+        <span class="nav-icon">⚠</span>
+        <span>Alertas</span>
+        <span class="nav-badge" id="badge-alertas" style="display:none">0</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar" id="user-avatar">—</div>
+        <div class="user-details">
+          <div class="user-email" id="user-email"></div>
+          <div class="user-role"  id="user-role"></div>
+        </div>
+      </div>
+      <button class="btn-logout" id="btn-logout">↩ Cerrar sesión</button>
+    </div>
+  </aside>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <div class="main-wrapper">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <button class="btn-menu" id="btn-menu" aria-label="Abrir menú">☰</button>
+      <div class="topbar-title" id="topbar-title">Dashboard</div>
+      <div class="topbar-actions">
+        <div class="date-badge" id="date-today"></div>
+      </div>
+    </header>
+
+    <main class="main-content">
+
+      <!-- ================================================
+           VISTA: Dashboard
+           ================================================ -->
+      <section id="view-dashboard" class="view">
+
+        <div class="view-header">
+          <div>
+            <h2>Panel de Control</h2>
+            <p class="view-subtitle">Resumen general del programa SEA</p>
+          </div>
+        </div>
+
+        <!-- Tarjetas estadísticas -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon stat-blue">◉</div>
+            <div class="stat-info">
+              <div class="stat-value" id="stat-total-estudiantes">—</div>
+              <div class="stat-label">Estudiantes activos</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon stat-green">✓</div>
+            <div class="stat-info">
+              <div class="stat-value" id="stat-sesiones-hoy">—</div>
+              <div class="stat-label">Sesiones hoy</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon stat-red">⚠</div>
+            <div class="stat-info">
+              <div class="stat-value" id="stat-alertas-activas">—</div>
+              <div class="stat-label">Alertas (30 días)</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon stat-amber">≡</div>
+            <div class="stat-info">
+              <div class="stat-value" id="stat-sesiones-semana">—</div>
+              <div class="stat-label">Sesiones esta semana</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actividad reciente + alertas -->
+        <div class="grid-2col">
+          <div class="card">
+            <div class="card-header">
+              <h3>Actividad Reciente</h3>
+            </div>
+            <div class="card-body" id="dashboard-recent">
+              <div class="empty-state">Cargando...</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h3>Alertas Recientes</h3>
+            </div>
+            <div class="card-body" id="dashboard-alerts">
+              <div class="empty-state">Cargando...</div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ================================================
+           VISTA: Registro de Asistencia
+           ================================================ -->
+      <section id="view-registro" class="view hidden">
+
+        <div class="view-header">
+          <div>
+            <h2>Registro de Asistencia</h2>
+            <p class="view-subtitle">Marca la asistencia del grupo para la sesión de hoy</p>
+          </div>
+        </div>
+
+        <!-- Selector de fecha y grupo -->
+        <div class="card">
+          <div class="card-body">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="reg-fecha">Fecha de la sesión</label>
+                <input type="date" id="reg-fecha" />
+              </div>
+              <div class="form-group">
+                <label for="reg-grupo">Grupo</label>
+                <select id="reg-grupo">
+                  <option value="">Seleccionar grupo...</option>
+                </select>
+              </div>
+              <div class="form-group form-group-action">
+                <button class="btn btn-primary" id="btn-cargar-grupo">Cargar grupo</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Formulario de asistencia (se muestra al cargar el grupo) -->
+        <div id="registro-form-container" class="hidden">
+
+          <!-- Lista de estudiantes -->
+          <div class="card mt-4">
+            <div class="card-header">
+              <div>
+                <h3 id="reg-titulo-grupo">—</h3>
+                <span class="badge badge-blue mt-1" id="reg-tipo-curso-badge"></span>
+              </div>
+              <div class="registro-summary">
+                <span class="summary-item summary-green">
+                  Presentes: <strong id="count-presentes">0</strong>
+                </span>
+                <span class="summary-item summary-red">
+                  Ausentes: <strong id="count-ausentes">0</strong>
+                </span>
+              </div>
+            </div>
+            <div class="card-body">
+              <p style="font-size:12.5px;color:var(--text-muted);margin-bottom:14px">
+                Haz clic en cada estudiante para marcar <strong>Presente ✓</strong> o <strong>Ausente ✕</strong>.
+                Un segundo clic deja el estado sin marcar.
+              </p>
+              <div class="student-list" id="student-list">
+                <!-- Se renderiza con JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Alertas y observaciones -->
+          <div class="card mt-4">
+            <div class="card-header">
+              <h3>Alertas y Observaciones</h3>
+            </div>
+            <div class="card-body">
+              <div class="alerts-check">
+
+                <label class="checkbox-card checkbox-red">
+                  <input type="checkbox" id="check-alerta-precalculo" />
+                  <div class="checkbox-content">
+                    <span class="checkbox-icon">⚠</span>
+                    <div>
+                      <strong>Alerta Precálculo</strong>
+                      <p>Bajo rendimiento, inasistencia crítica o riesgo académico.</p>
+                    </div>
+                  </div>
+                </label>
+
+                <label class="checkbox-card checkbox-amber">
+                  <input type="checkbox" id="check-alerta-psicologia" />
+                  <div class="checkbox-content">
+                    <span class="checkbox-icon">♡</span>
+                    <div>
+                      <strong>Alerta Psicología</strong>
+                      <p>Requiere seguimiento emocional o psicológico.</p>
+                    </div>
+                  </div>
+                </label>
+
+              </div>
+
+              <div class="form-group mt-4">
+                <label for="reg-observaciones">Observaciones de la sesión</label>
+                <textarea id="reg-observaciones" rows="4"
+                  placeholder="Anota cualquier situación relevante de la sesión..."></textarea>
+              </div>
+
+              <div class="form-actions">
+                <button class="btn btn-success btn-lg" id="btn-guardar-asistencia">
+                  Guardar Asistencia
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ================================================
+           VISTA: Historial
+           ================================================ -->
+      <section id="view-historial" class="view hidden">
+
+        <div class="view-header">
+          <div>
+            <h2>Historial de Asistencias</h2>
+            <p class="view-subtitle">Consulta los registros por rango de fechas y grupo</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-body">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="hist-fecha-ini">Desde</label>
+                <input type="date" id="hist-fecha-ini" />
+              </div>
+              <div class="form-group">
+                <label for="hist-fecha-fin">Hasta</label>
+                <input type="date" id="hist-fecha-fin" />
+              </div>
+              <div class="form-group">
+                <label for="hist-grupo">Grupo</label>
+                <select id="hist-grupo">
+                  <option value="">Todos los grupos</option>
+                </select>
+              </div>
+              <div class="form-group form-group-action">
+                <button class="btn btn-primary" id="btn-filtrar-historial">Buscar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mt-4">
+          <div class="card-body p-0">
+            <div id="historial-table-container">
+              <div class="empty-state">Selecciona un rango de fechas y haz clic en Buscar.</div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ================================================
+           VISTA: Estudiantes
+           ================================================ -->
+      <section id="view-estudiantes" class="view hidden">
+
+        <div class="view-header">
+          <div>
+            <h2>Estudiantes</h2>
+            <p class="view-subtitle">Consulta y gestión del padrón de estudiantes</p>
+          </div>
+          <div class="view-actions">
+            <button class="btn btn-primary hidden" id="btn-nuevo-estudiante">
+              + Nuevo estudiante
+            </button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-body">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="est-filter-tipo">Tipo de curso</label>
+                <select id="est-filter-tipo">
+                  <option value="">Todos</option>
+                  <option value="Precálculo">Precálculo</option>
+                  <option value="Refuerzo SEA">Refuerzo SEA</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="est-filter-grupo">Grupo</label>
+                <select id="est-filter-grupo">
+                  <option value="">Todos los grupos</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="est-filter-buscar">Nombre o código</label>
+                <input type="text" id="est-filter-buscar" placeholder="Buscar..." />
+              </div>
+              <div class="form-group form-group-action">
+                <button class="btn btn-primary" id="btn-buscar-estudiantes">Buscar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mt-4">
+          <div class="card-body p-0">
+            <div id="estudiantes-table-container">
+              <div class="empty-state">Aplica un filtro para ver estudiantes.</div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ================================================
+           VISTA: Alertas
+           ================================================ -->
+      <section id="view-alertas" class="view hidden">
+
+        <div class="view-header">
+          <div>
+            <h2>Panel de Alertas</h2>
+            <p class="view-subtitle">Grupos con situaciones que requieren seguimiento</p>
+          </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="alerts-tabs">
+          <button class="tab-btn active" data-tab="precalculo">
+            ⚠ Precálculo
+            <span class="tab-badge" id="tab-count-precalculo">0</span>
+          </button>
+          <button class="tab-btn" data-tab="psicologia">
+            ♡ Psicología
+            <span class="tab-badge" id="tab-count-psicologia">0</span>
+          </button>
+        </div>
+
+        <div id="alertas-tab-precalculo" class="tab-content active">
+          <div id="alertas-precalculo-container">
+            <div class="empty-state">Cargando...</div>
+          </div>
+        </div>
+
+        <div id="alertas-tab-psicologia" class="tab-content hidden">
+          <div id="alertas-psicologia-container">
+            <div class="empty-state">Cargando...</div>
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+  </div><!-- /main-wrapper -->
+
+</div><!-- /screen-app -->
+
+<!-- ============================================================
+     MODAL: Estudiante (nuevo / editar)
+     ============================================================ -->
+<div id="modal-estudiante" class="modal hidden" role="dialog" aria-modal="true">
+  <div class="modal-overlay"></div>
+  <div class="modal-container">
+    <div class="modal-header">
+      <h3 id="modal-estudiante-title">Nuevo Estudiante</h3>
+      <button class="modal-close" id="btn-modal-close" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="form-estudiante" autocomplete="off">
+        <input type="hidden" id="est-id" />
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="est-codigo">Código de estudiante *</label>
+            <input type="text" id="est-codigo" placeholder="2234567" required />
+          </div>
+          <div class="form-group">
+            <label for="est-tipo-curso">Tipo de curso *</label>
+            <select id="est-tipo-curso" required>
+              <option value="">Seleccionar...</option>
+              <option value="Precálculo">Precálculo</option>
+              <option value="Refuerzo SEA">Refuerzo SEA</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="est-nombre">Nombre completo *</label>
+          <input type="text" id="est-nombre" placeholder="Apellido, Nombre" required />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="est-grupo">Grupo *</label>
+            <input type="text" id="est-grupo" placeholder="Ej: MAT-A1" required />
+          </div>
+          <div class="form-group">
+            <label for="est-profesor">Email del profesor *</label>
+            <input type="email" id="est-profesor" placeholder="profesor@uis.edu.co" required />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="est-activo" checked />
+            Estudiante activo
+          </label>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="btn-modal-cancel">Cancelar</button>
+      <button class="btn btn-primary" id="btn-modal-save">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+<!-- ============================================================
+     Scripts
+     ============================================================ -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="js/config.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/registro.js"></script>
+<script src="js/historial.js"></script>
+<script src="js/estudiantes.js"></script>
+<script src="js/alertas.js"></script>
+<script src="js/main.js"></script>
+
+</body>
+</html>
