@@ -126,10 +126,9 @@ function renderStudentList(estudiantes, existing) {
       if (d.presente === false) { estadoClass = 'ausente';  icon = '✕'; }
     }
 
-    const preActive  = d?.alerta_precalculo ? ' active' : '';
-    const psiActive  = d?.alerta_psicologia ? ' active' : '';
-    const obsValue   = d?.observacion ? escapeHtml(d.observacion) : '';
-    const obsDisplay = (d?.alerta_precalculo || d?.alerta_psicologia) ? 'block' : 'none';
+    const preActive = d?.alerta_precalculo ? ' active' : '';
+    const psiActive = d?.alerta_psicologia ? ' active' : '';
+    const obsValue  = d?.observacion ? escapeHtml(d.observacion) : '';
 
     return `
       <div class="student-item ${estadoClass}" data-id="${est.id}">
@@ -153,8 +152,7 @@ function renderStudentList(estudiantes, existing) {
           </div>
           <input type="text" class="est-obs"
                  placeholder="Observación del estudiante..."
-                 value="${obsValue}"
-                 style="display:${obsDisplay}">
+                 value="${obsValue}">
         </div>
       </div>
     `;
@@ -178,11 +176,6 @@ function togglePresencia(el) {
 
 function toggleAlertaEst(btn) {
   btn.classList.toggle('active');
-  const extra = btn.closest('.student-extra');
-  const tieneAlerta = extra.querySelectorAll('.btn-alerta-est.active').length > 0;
-  const obsInput = extra.querySelector('.est-obs');
-  obsInput.style.display = tieneAlerta ? 'block' : 'none';
-  if (!tieneAlerta) obsInput.value = '';
 }
 
 function actualizarContadores() {
