@@ -31,9 +31,16 @@ CREATE TABLE IF NOT EXISTS public.email_whitelist (
 -- RLS: solo usuarios autenticados pueden leer su propio email en la whitelist
 ALTER TABLE public.email_whitelist ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "whitelist_select" ON public.email_whitelist
-    FOR SELECT TO authenticated
-    USING (true);
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename  = 'email_whitelist'
+      AND policyname = 'whitelist_select'
+  ) THEN
+    EXECUTE 'CREATE POLICY whitelist_select ON public.email_whitelist FOR SELECT TO authenticated USING (true)';
+  END IF;
+END $$;
 
 -- 4. Insertar los emails autorizados (edita esta lista según necesites)
 INSERT INTO public.email_whitelist (email) VALUES
