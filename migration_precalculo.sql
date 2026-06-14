@@ -4,7 +4,11 @@
 --  IMPORTANTE: ejecutar antes de desplegar el nuevo código
 -- ============================================================
 
--- 1. Migrar datos existentes
+-- 1. Soltar constraints antes de migrar datos
+ALTER TABLE public.estudiantes DROP CONSTRAINT IF EXISTS estudiantes_tipo_curso_check;
+ALTER TABLE public.asistencias  DROP CONSTRAINT IF EXISTS asistencias_tipo_curso_check;
+
+-- 2. Migrar datos existentes
 UPDATE public.estudiantes
 SET tipo_curso = 'Precálculo'
 WHERE tipo_curso = 'Didáctica del Cálculo';
@@ -13,12 +17,10 @@ UPDATE public.asistencias
 SET tipo_curso = 'Precálculo'
 WHERE tipo_curso = 'Didáctica del Cálculo';
 
--- 2. Actualizar CHECK constraints (los nombres son los generados por PostgreSQL)
-ALTER TABLE public.estudiantes DROP CONSTRAINT IF EXISTS estudiantes_tipo_curso_check;
+-- 3. Volver a crear constraints con los valores correctos
 ALTER TABLE public.estudiantes ADD CONSTRAINT estudiantes_tipo_curso_check
     CHECK (tipo_curso IN ('Precálculo', 'Refuerzo SEA'));
 
-ALTER TABLE public.asistencias DROP CONSTRAINT IF EXISTS asistencias_tipo_curso_check;
 ALTER TABLE public.asistencias ADD CONSTRAINT asistencias_tipo_curso_check
     CHECK (tipo_curso IN ('Precálculo', 'Refuerzo SEA'));
 
