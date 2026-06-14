@@ -12,8 +12,6 @@ async function initAuth() {
   // llegar con null mientras el código se intercambia; SIGNED_IN llega
   // cuando el intercambio termina. No usar getSession() evita la carrera.
   db.auth.onAuthStateChange(async (event, session) => {
-    console.log('[SEA] Auth:', event, session?.user?.email ?? '—');
-
     if (session) {
       const autorizado = await verificarWhitelist(session.user.email);
       if (autorizado) {
@@ -41,10 +39,6 @@ async function verificarWhitelist(email) {
     .select('email')
     .eq('email', email)
     .maybeSingle();
-  if (error) {
-    console.error('[SEA] Whitelist error:', error.code, error.message);
-  }
-  console.log('[SEA] Whitelist check:', email, '→', data ? 'autorizado' : 'no encontrado');
   return data !== null;
 }
 
