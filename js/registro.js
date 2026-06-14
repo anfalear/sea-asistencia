@@ -108,7 +108,7 @@ function mostrarFormRegistro(grupo, tipoCurso, existing) {
   document.getElementById('reg-titulo-grupo').textContent = grupo;
   document.getElementById('reg-tipo-curso-badge').textContent = tipoCurso;
   document.getElementById('reg-tipo-curso-badge').className =
-    'badge ' + (tipoCurso === 'Precálculo' ? 'badge-blue' : 'badge-green');
+    'badge ' + (tipoCurso === 'Didáctica del Cálculo' ? 'badge-blue' : 'badge-green');
 
   // Cargar datos existentes si hay registro previo
   if (existing) {

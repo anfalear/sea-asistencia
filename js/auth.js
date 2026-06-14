@@ -1,21 +1,32 @@
 // ============================================================
-//  SEA · Autenticación (Supabase Magic Link)
+//  SEA · Autenticación (Google OAuth + lista blanca)
 // ============================================================
 
 async function initAuth() {
-  // Si llega con token en el hash (callback del magic link), Supabase lo procesa solo
   const { data: { session } } = await db.auth.getSession();
   if (session) {
-    setCurrentUser(session.user);
-    showApp();
+    const autorizado = await verificarWhitelist(session.user.email);
+    if (autorizado) {
+      setCurrentUser(session.user);
+      showApp();
+    } else {
+      await db.auth.signOut();
+      showLogin('Tu cuenta no está autorizada para acceder al sistema.');
+    }
   } else {
     showLogin();
   }
 
-  db.auth.onAuthStateChange((_event, session) => {
+  db.auth.onAuthStateChange(async (_event, session) => {
     if (session) {
-      setCurrentUser(session.user);
-      showApp();
+      const autorizado = await verificarWhitelist(session.user.email);
+      if (autorizado) {
+        setCurrentUser(session.user);
+        showApp();
+      } else {
+        await db.auth.signOut();
+        showLogin('Tu cuenta no está autorizada para acceder al sistema.');
+      }
     } else {
       setCurrentUser(null);
       showLogin();
@@ -23,75 +34,68 @@ async function initAuth() {
   });
 }
 
-async function sendMagicLink(email) {
+async function verificarWhitelist(email) {
+  const { data } = await db
+    .from('email_whitelist')
+    .select('email')
+    .eq('email', email)
+    .maybeSingle();
+  return data !== null;
+}
+
+async function loginConGoogle() {
   const redirectTo = window.location.origin + window.location.pathname;
-  const { error } = await db.auth.signInWithOtp({
-    email,
-    options: { emailRedirectTo: redirectTo }
+  const { error } = await db.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo }
   });
-  return error;
+  if (error) {
+    const msg = document.getElementById('login-message');
+    msg.textContent = 'Error al iniciar sesión: ' + error.message;
+    msg.className = 'login-message error';
+  }
 }
 
 async function logout() {
   await db.auth.signOut();
 }
 
-// ---- Wiring eventos de login ----
 document.addEventListener('DOMContentLoaded', () => {
-  const form    = document.getElementById('form-login');
-  const input   = document.getElementById('login-email');
-  const btnSend = document.getElementById('btn-login');
-  const msg     = document.getElementById('login-message');
-
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const email = input.value.trim();
-    if (!email) return;
-
-    btnSend.disabled = true;
-    btnSend.textContent = 'Enviando...';
-    msg.className = 'login-message hidden';
-
-    const error = await sendMagicLink(email);
-
-    btnSend.disabled = false;
-    btnSend.textContent = 'Enviar enlace de acceso';
-
-    if (error) {
-      msg.textContent = 'Error al enviar el enlace: ' + error.message;
-      msg.className = 'login-message error';
-    } else {
-      msg.innerHTML = `✓ Enlace enviado a <strong>${email}</strong><br>
-        Revisa tu bandeja de entrada y haz clic en el enlace.`;
-      msg.className = 'login-message success';
-      input.value = '';
-    }
-  });
-
+  document.getElementById('btn-google-login').addEventListener('click', loginConGoogle);
   document.getElementById('btn-logout').addEventListener('click', async () => {
     await logout();
   });
 });
 
-function showLogin() {
+function showLogin(errorMsg = '') {
   document.getElementById('screen-login').classList.remove('hidden');
   document.getElementById('screen-app').classList.add('hidden');
+  const msg = document.getElementById('login-message');
+  if (errorMsg) {
+    msg.textContent = errorMsg;
+    msg.className = 'login-message error';
+  } else {
+    msg.className = 'login-message hidden';
+  }
 }
 
 function showApp() {
   document.getElementById('screen-login').classList.add('hidden');
   document.getElementById('screen-app').classList.remove('hidden');
 
-  // Mostrar info del usuario
   const email = currentUser?.email || '';
-  const initials = email.substring(0, 2).toUpperCase();
+  const name  = currentUser?.user_metadata?.full_name || '';
+  const initials = name
+    ? name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
+    : email.substring(0, 2).toUpperCase();
+
   document.getElementById('user-avatar').textContent = initials;
   document.getElementById('user-email').textContent  = email;
   document.getElementById('user-role').textContent   = isAdmin ? 'Administrador' : 'Profesor';
 
-  // Restringir nav si no es admin (aunque RLS ya protege el backend)
   if (!isAdmin) {
     document.getElementById('btn-nuevo-estudiante')?.classList.add('hidden');
+    document.getElementById('btn-importar-excel')?.classList.add('hidden');
   }
 
   onAppReady();

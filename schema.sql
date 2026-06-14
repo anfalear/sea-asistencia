@@ -14,8 +14,8 @@ CREATE TABLE IF NOT EXISTS public.estudiantes (
     codigo_estudiante VARCHAR(20) UNIQUE NOT NULL,
     nombre_completo   VARCHAR(150) NOT NULL,
     curso_grupo       VARCHAR(50)  NOT NULL,
-    tipo_curso        VARCHAR(20)  NOT NULL
-        CHECK (tipo_curso IN ('Precálculo', 'Refuerzo SEA')),
+    tipo_curso        VARCHAR(25)  NOT NULL
+        CHECK (tipo_curso IN ('Didáctica del Cálculo', 'Refuerzo SEA')),
     profesor_email    VARCHAR(100) NOT NULL,
     activo            BOOLEAN      NOT NULL DEFAULT TRUE,
     created_at        TIMESTAMPTZ  DEFAULT NOW()
@@ -29,8 +29,8 @@ CREATE TABLE IF NOT EXISTS public.asistencias (
     fecha             DATE        NOT NULL,
     profesor_email    VARCHAR(100) NOT NULL,
     curso_grupo       VARCHAR(50)  NOT NULL,
-    tipo_curso        VARCHAR(20)  NOT NULL
-        CHECK (tipo_curso IN ('Precálculo', 'Refuerzo SEA')),
+    tipo_curso        VARCHAR(25)  NOT NULL
+        CHECK (tipo_curso IN ('Didáctica del Cálculo', 'Refuerzo SEA')),
     presentes         INTEGER      NOT NULL DEFAULT 0 CHECK (presentes >= 0),
     ausentes          INTEGER      NOT NULL DEFAULT 0 CHECK (ausentes >= 0),
     alerta_precalculo BOOLEAN      NOT NULL DEFAULT FALSE,

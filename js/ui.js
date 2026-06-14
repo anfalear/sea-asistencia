@@ -110,7 +110,7 @@ function emptyRow(cols, text = 'Sin registros') {
 
 function alertBadges(row) {
   let html = '';
-  if (row.alerta_precalculo) html += '<span class="badge badge-red">Precálculo</span> ';
+  if (row.alerta_precalculo) html += '<span class="badge badge-red">Didáctica del Cálculo</span> ';
   if (row.alerta_psicologia) html += '<span class="badge badge-amber">Psicología</span>';
   return html || '<span class="badge badge-gray">—</span>';
 }
@@ -138,6 +138,17 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-modal-close').addEventListener('click', closeModal);
   document.getElementById('btn-modal-cancel').addEventListener('click', closeModal);
   document.querySelector('.modal-overlay')?.addEventListener('click', closeModal);
+
+  // Instructivo
+  document.getElementById('btn-instructivo').addEventListener('click', () => {
+    document.getElementById('modal-instructivo').classList.remove('hidden');
+  });
+  document.getElementById('btn-instructivo-close').addEventListener('click', () => {
+    document.getElementById('modal-instructivo').classList.add('hidden');
+  });
+  document.getElementById('btn-instructivo-ok').addEventListener('click', () => {
+    document.getElementById('modal-instructivo').classList.add('hidden');
+  });
 
   // Tabs de alertas
   document.querySelectorAll('.tab-btn').forEach(btn => {

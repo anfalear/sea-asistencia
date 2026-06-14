@@ -32,7 +32,7 @@ async function cargarAlertasPrecalculo() {
     container.innerHTML = `
       <div class="empty-state">
         <div class="empty-state-icon">✓</div>
-        Sin alertas de Precálculo activas.
+        Sin alertas de Didáctica del Cálculo activas.
       </div>`;
     return;
   }

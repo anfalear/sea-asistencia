@@ -5,27 +5,29 @@
 async function initEstudiantes() {
   await cargarGruposEnSelect('est-filter-grupo');
 
-  // Admin: mostrar botón nuevo estudiante
   const btnNuevo = document.getElementById('btn-nuevo-estudiante');
+  const btnImportar = document.getElementById('btn-importar-excel');
+
   if (isAdmin) {
     btnNuevo.classList.remove('hidden');
     btnNuevo.onclick = () => {
       document.getElementById('est-profesor').value = currentUser.email;
       openModal('Nuevo Estudiante');
     };
+    btnImportar.classList.remove('hidden');
+    btnImportar.onclick = abrirImportador;
   } else {
     btnNuevo.classList.add('hidden');
+    btnImportar.classList.add('hidden');
   }
 
   document.getElementById('btn-buscar-estudiantes').onclick = cargarEstudiantes;
   document.getElementById('btn-modal-save').onclick = guardarEstudiante;
 
-  // Búsqueda con Enter en el campo de texto
   document.getElementById('est-filter-buscar').onkeydown = (e) => {
     if (e.key === 'Enter') cargarEstudiantes();
   };
 
-  // Auto-completar email del profesor para no-admins
   if (!isAdmin) {
     const inputProf = document.getElementById('est-profesor');
     if (inputProf) inputProf.value = currentUser.email;
@@ -76,6 +78,7 @@ async function cargarEstudiantes() {
             <th>Tipo</th>
             <th>Profesor</th>
             <th>Estado</th>
+            <th></th>
             ${isAdmin ? '<th>Acciones</th>' : ''}
           </tr>
         </thead>
@@ -86,7 +89,7 @@ async function cargarEstudiantes() {
               <td><strong>${e.nombre_completo}</strong></td>
               <td>${e.curso_grupo}</td>
               <td>
-                <span class="badge ${e.tipo_curso === 'Precálculo' ? 'badge-blue' : 'badge-green'}">
+                <span class="badge ${e.tipo_curso === 'Didáctica del Cálculo' ? 'badge-blue' : 'badge-green'}">
                   ${e.tipo_curso}
                 </span>
               </td>
@@ -95,6 +98,14 @@ async function cargarEstudiantes() {
                 <span class="badge ${e.activo ? 'badge-green' : 'badge-gray'}">
                   ${e.activo ? 'Activo' : 'Inactivo'}
                 </span>
+              </td>
+              <td>
+                <button class="btn btn-ghost btn-sm"
+                        data-id="${e.id}"
+                        data-nombre="${e.nombre_completo.replace(/"/g, '&quot;')}"
+                        onclick="mostrarEstadisticasEstudiante(this.dataset.id, this.dataset.nombre)">
+                  📊 Ver
+                </button>
               </td>
               ${isAdmin ? `
               <td>
@@ -200,7 +211,6 @@ async function guardarEstudiante() {
   toast(`Estudiante ${id ? 'actualizado' : 'registrado'} correctamente.`, 'success');
   closeModal();
   await cargarEstudiantes();
-  // Actualizar selects de grupo en otras vistas
   await cargarGruposEnSelect('reg-grupo');
   await cargarGruposEnSelect('hist-grupo');
   await cargarGruposEnSelect('est-filter-grupo');
