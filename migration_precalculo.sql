@@ -46,9 +46,10 @@ END $$;
 
 -- 4. Insertar los emails autorizados (edita esta lista según necesites)
 INSERT INTO public.email_whitelist (email) VALUES
- ('aflaok10@gmail.com'),
-('profesor1@uis.edu.co'),
-('profesor2@uis.edu.co');
+  ('aflaok10@gmail.com'),
+  ('profesor1@uis.edu.co'),
+  ('profesor2@uis.edu.co')
+ON CONFLICT (email) DO NOTHING;
 
 -- ============================================================
 --  Verificación: ejecuta estas consultas para confirmar
