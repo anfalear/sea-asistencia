@@ -76,7 +76,7 @@ async function cargarHistorial() {
               <td><strong>${formatDate(r.fecha)}</strong></td>
               <td>${r.curso_grupo}</td>
               <td>
-                <span class="badge ${r.tipo_curso === 'Didáctica del Cálculo' ? 'badge-blue' : 'badge-green'}">
+                <span class="badge ${r.tipo_curso === 'Precálculo' ? 'badge-blue' : 'badge-green'}">
                   ${r.tipo_curso}
                 </span>
               </td>

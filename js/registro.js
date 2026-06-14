@@ -99,11 +99,7 @@ function mostrarFormRegistro(grupo, tipoCurso, existing) {
   document.getElementById('reg-titulo-grupo').textContent = grupo;
   document.getElementById('reg-tipo-curso-badge').textContent = tipoCurso;
   document.getElementById('reg-tipo-curso-badge').className =
-    'badge ' + (tipoCurso === 'Didáctica del Cálculo' ? 'badge-blue' : 'badge-green');
-
-  if (existing) {
-    toast('Ya hay asistencia registrada para este día. Puedes editarla.', 'warning', 4000);
-  }
+    'badge ' + (tipoCurso === 'Precálculo' ? 'badge-blue' : 'badge-green');
 
   actualizarContadores();
 }
@@ -296,7 +292,7 @@ async function guardarAsistencia() {
   btn.disabled = false;
   btn.textContent = 'Guardar Asistencia';
 
-  toast(`Asistencia guardada: ${presentes} presentes, ${ausentes} ausentes.`, 'success');
+  toast('Asistencia registrada correctamente. Puedes verificar los cambios en Historial.', 'success');
 
   await cargarGrupo();
   await loadAlertBadge();

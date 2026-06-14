@@ -89,7 +89,7 @@ async function cargarEstudiantes() {
               <td><strong>${e.nombre_completo}</strong></td>
               <td>${e.curso_grupo}</td>
               <td>
-                <span class="badge ${e.tipo_curso === 'Didáctica del Cálculo' ? 'badge-blue' : 'badge-green'}">
+                <span class="badge ${e.tipo_curso === 'Precálculo' ? 'badge-blue' : 'badge-green'}">
                   ${e.tipo_curso}
                 </span>
               </td>
