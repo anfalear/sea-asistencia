@@ -27,14 +27,14 @@ async function loadDashboardStats() {
     .select('*', { count: 'exact', head: true })
     .eq('fecha', today);
 
-  // Alertas activas (últimos 30 días)
+  // Alertas activas por estudiante (últimos 30 días)
   const hace30 = new Date();
   hace30.setDate(hace30.getDate() - 30);
   const { count: alertasActivas } = await db
-    .from('asistencias')
-    .select('*', { count: 'exact', head: true })
-    .gte('fecha', hace30.toISOString().split('T')[0])
-    .or('alerta_precalculo.eq.true,alerta_psicologia.eq.true');
+    .from('detalle_asistencias')
+    .select('asistencia_id, asistencias!inner(fecha)', { count: 'exact', head: true })
+    .or('alerta_precalculo.eq.true,alerta_psicologia.eq.true')
+    .gte('asistencias.fecha', hace30.toISOString().split('T')[0]);
 
   // Sesiones esta semana
   const { count: sesionesSemana } = await db
@@ -78,13 +78,17 @@ async function loadDashboardAlerts() {
   const el = document.getElementById('dashboard-alerts');
   const hace30 = new Date();
   hace30.setDate(hace30.getDate() - 30);
+  const fechaLimite = hace30.toISOString().split('T')[0];
 
   const { data, error } = await db
-    .from('asistencias')
-    .select('fecha, curso_grupo, tipo_curso, alerta_precalculo, alerta_psicologia, observaciones')
-    .gte('fecha', hace30.toISOString().split('T')[0])
+    .from('detalle_asistencias')
+    .select(`
+      alerta_precalculo, alerta_psicologia, observacion,
+      asistencias!inner(fecha, curso_grupo),
+      estudiantes!inner(nombre_completo)
+    `)
     .or('alerta_precalculo.eq.true,alerta_psicologia.eq.true')
-    .order('fecha', { ascending: false })
+    .gte('asistencias.fecha', fechaLimite)
     .limit(6);
 
   if (error || !data?.length) {
@@ -92,26 +96,45 @@ async function loadDashboardAlerts() {
     return;
   }
 
-  el.innerHTML = data.map(r => `
-    <div class="activity-item">
-      <div class="activity-dot" style="background:var(--red)"></div>
-      <div class="activity-text">
-        <strong>${r.curso_grupo}</strong> — ${formatDate(r.fecha)}<br>
-        <div style="margin-top:4px">${alertBadges(r)}</div>
+  data.sort((a, b) =>
+    (b.asistencias?.fecha || '').localeCompare(a.asistencias?.fecha || ''));
+
+  el.innerHTML = data.map(r => {
+    const badges = [
+      r.alerta_precalculo ? '<span class="badge badge-red">Didáctica</span>' : '',
+      r.alerta_psicologia ? '<span class="badge badge-amber">Psicología</span>' : '',
+    ].filter(Boolean).join(' ');
+
+    return `
+      <div class="activity-item">
+        <div class="activity-dot" style="background:var(--red)"></div>
+        <div class="activity-text">
+          <strong>${escapeHtml(r.estudiantes.nombre_completo)}</strong><br>
+          <span style="color:var(--text-muted);font-size:12px">
+            ${r.asistencias.curso_grupo} · ${formatDate(r.asistencias.fecha)}
+          </span>
+          <div style="margin-top:4px">${badges}</div>
+          ${r.observacion
+            ? `<div style="font-size:12px;color:var(--text-muted);font-style:italic;margin-top:2px">
+                "${escapeHtml(r.observacion)}"
+               </div>`
+            : ''}
+        </div>
       </div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 }
 
 async function loadAlertBadge() {
   const hace30 = new Date();
   hace30.setDate(hace30.getDate() - 30);
+  const fechaLimite = hace30.toISOString().split('T')[0];
 
   const { count } = await db
-    .from('asistencias')
-    .select('*', { count: 'exact', head: true })
-    .gte('fecha', hace30.toISOString().split('T')[0])
-    .or('alerta_precalculo.eq.true,alerta_psicologia.eq.true');
+    .from('detalle_asistencias')
+    .select('asistencia_id, asistencias!inner(fecha)', { count: 'exact', head: true })
+    .or('alerta_precalculo.eq.true,alerta_psicologia.eq.true')
+    .gte('asistencias.fecha', fechaLimite);
 
   const badge = document.getElementById('badge-alertas');
   if (count > 0) {

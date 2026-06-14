@@ -108,11 +108,12 @@ function emptyRow(cols, text = 'Sin registros') {
   return `<tr><td colspan="${cols}" class="empty-state">${text}</td></tr>`;
 }
 
-function alertBadges(row) {
-  let html = '';
-  if (row.alerta_precalculo) html += '<span class="badge badge-red">Didáctica del Cálculo</span> ';
-  if (row.alerta_psicologia) html += '<span class="badge badge-amber">Psicología</span>';
-  return html || '<span class="badge badge-gray">—</span>';
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
 
 // ---- Wiring sidebar & topbar ----

@@ -1,5 +1,5 @@
 // ============================================================
-//  SEA · Panel de Alertas
+//  SEA · Panel de Alertas (por estudiante · detalle_asistencias)
 // ============================================================
 
 async function loadAlertas() {
@@ -14,11 +14,17 @@ async function cargarAlertasPrecalculo() {
   container.innerHTML = '<div class="empty-state">Cargando...</div>';
 
   const { data, error } = await db
-    .from('asistencias')
-    .select('*')
+    .from('detalle_asistencias')
+    .select(`
+      alerta_precalculo, alerta_psicologia, observacion,
+      asistencias!inner(fecha, curso_grupo, tipo_curso),
+      estudiantes!inner(nombre_completo, codigo_estudiante)
+    `)
     .eq('alerta_precalculo', true)
-    .order('fecha', { ascending: false })
     .limit(50);
+
+  if (data) data.sort((a, b) =>
+    (b.asistencias?.fecha || '').localeCompare(a.asistencias?.fecha || ''));
 
   const count = data?.length ?? 0;
   document.getElementById('tab-count-precalculo').textContent = count;
@@ -41,16 +47,15 @@ async function cargarAlertasPrecalculo() {
     <div class="alert-card">
       <div class="alert-card-icon red">⚠</div>
       <div class="alert-card-info">
-        <div class="alert-card-title">${r.curso_grupo}</div>
+        <div class="alert-card-title">${escapeHtml(r.estudiantes.nombre_completo)}</div>
         <div class="alert-card-sub">
-          ${r.tipo_curso} · Profesor: ${r.profesor_email}
+          ${r.asistencias.curso_grupo} · ${r.asistencias.tipo_curso}
         </div>
-        <div class="alert-card-sub" style="margin-top:4px">
-          Presentes: <strong>${r.presentes}</strong> · Ausentes: <strong>${r.ausentes}</strong>
-        </div>
-        ${r.observaciones ? `<div class="alert-card-obs">"${r.observaciones}"</div>` : ''}
+        ${r.observacion
+          ? `<div class="alert-card-obs">"${escapeHtml(r.observacion)}"</div>`
+          : ''}
       </div>
-      <div class="alert-card-date">${formatDate(r.fecha)}</div>
+      <div class="alert-card-date">${formatDate(r.asistencias.fecha)}</div>
     </div>
   `).join('');
 }
@@ -60,11 +65,17 @@ async function cargarAlertasPsicologia() {
   container.innerHTML = '<div class="empty-state">Cargando...</div>';
 
   const { data, error } = await db
-    .from('asistencias')
-    .select('*')
+    .from('detalle_asistencias')
+    .select(`
+      alerta_precalculo, alerta_psicologia, observacion,
+      asistencias!inner(fecha, curso_grupo, tipo_curso),
+      estudiantes!inner(nombre_completo, codigo_estudiante)
+    `)
     .eq('alerta_psicologia', true)
-    .order('fecha', { ascending: false })
     .limit(50);
+
+  if (data) data.sort((a, b) =>
+    (b.asistencias?.fecha || '').localeCompare(a.asistencias?.fecha || ''));
 
   const count = data?.length ?? 0;
   document.getElementById('tab-count-psicologia').textContent = count;
@@ -87,16 +98,15 @@ async function cargarAlertasPsicologia() {
     <div class="alert-card">
       <div class="alert-card-icon amber">♡</div>
       <div class="alert-card-info">
-        <div class="alert-card-title">${r.curso_grupo}</div>
+        <div class="alert-card-title">${escapeHtml(r.estudiantes.nombre_completo)}</div>
         <div class="alert-card-sub">
-          ${r.tipo_curso} · Profesor: ${r.profesor_email}
+          ${r.asistencias.curso_grupo} · ${r.asistencias.tipo_curso}
         </div>
-        <div class="alert-card-sub" style="margin-top:4px">
-          Presentes: <strong>${r.presentes}</strong> · Ausentes: <strong>${r.ausentes}</strong>
-        </div>
-        ${r.observaciones ? `<div class="alert-card-obs">"${r.observaciones}"</div>` : ''}
+        ${r.observacion
+          ? `<div class="alert-card-obs">"${escapeHtml(r.observacion)}"</div>`
+          : ''}
       </div>
-      <div class="alert-card-date">${formatDate(r.fecha)}</div>
+      <div class="alert-card-date">${formatDate(r.asistencias.fecha)}</div>
     </div>
   `).join('');
 }

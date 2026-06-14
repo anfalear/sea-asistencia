@@ -34,7 +34,7 @@ async function cargarHistorial() {
 
   let query = db
     .from('asistencias')
-    .select('*')
+    .select('*, detalle_asistencias(alerta_precalculo, alerta_psicologia)')
     .gte('fecha', fechaIni)
     .lte('fecha', fechaFin)
     .order('fecha', { ascending: false })
@@ -65,11 +65,13 @@ async function cargarHistorial() {
             <th>Presentes</th>
             <th>Ausentes</th>
             <th>Alertas</th>
-            <th>Observaciones</th>
           </tr>
         </thead>
         <tbody>
-          ${data.map(r => `
+          ${data.map(r => {
+            const alertCount = r.detalle_asistencias
+              ?.filter(d => d.alerta_precalculo || d.alerta_psicologia).length ?? 0;
+            return `
             <tr>
               <td><strong>${formatDate(r.fecha)}</strong></td>
               <td>${r.curso_grupo}</td>
@@ -78,20 +80,15 @@ async function cargarHistorial() {
                   ${r.tipo_curso}
                 </span>
               </td>
+              <td><span class="badge badge-green">${r.presentes}</span></td>
+              <td><span class="badge ${r.ausentes > 0 ? 'badge-red' : 'badge-gray'}">${r.ausentes}</span></td>
               <td>
-                <span class="badge badge-green">${r.presentes}</span>
+                ${alertCount > 0
+                  ? `<span class="badge badge-red">${alertCount} alerta${alertCount !== 1 ? 's' : ''}</span>`
+                  : '<span class="badge badge-gray">—</span>'}
               </td>
-              <td>
-                <span class="badge ${r.ausentes > 0 ? 'badge-red' : 'badge-gray'}">${r.ausentes}</span>
-              </td>
-              <td>
-                <div class="hist-row-alerts">${alertBadges(r)}</div>
-              </td>
-              <td style="max-width:220px;white-space:normal;font-size:12.5px;color:var(--text-muted)">
-                ${r.observaciones || '—'}
-              </td>
-            </tr>
-          `).join('')}
+            </tr>`;
+          }).join('')}
         </tbody>
       </table>
     </div>

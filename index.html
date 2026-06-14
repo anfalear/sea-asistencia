@@ -226,54 +226,13 @@
             </div>
             <div class="card-body">
               <p style="font-size:12.5px;color:var(--text-muted);margin-bottom:14px">
-                Haz clic en cada estudiante para marcar <strong>Presente ✓</strong> o <strong>Ausente ✕</strong>.
-                Un segundo clic deja el estado sin marcar.
+                Haz clic en el nombre del estudiante para marcar <strong>Presente ✓</strong> o <strong>Ausente ✕</strong>.
+                Usa los botones <strong>⚠ Didáctica</strong> y <strong>♡ Psicología</strong> para reportar alertas individuales.
               </p>
               <div class="student-list" id="student-list">
                 <!-- Se renderiza con JS -->
               </div>
-            </div>
-          </div>
-
-          <!-- Alertas y observaciones -->
-          <div class="card mt-4">
-            <div class="card-header">
-              <h3>Alertas y Observaciones</h3>
-            </div>
-            <div class="card-body">
-              <div class="alerts-check">
-
-                <label class="checkbox-card checkbox-red">
-                  <input type="checkbox" id="check-alerta-precalculo" />
-                  <div class="checkbox-content">
-                    <span class="checkbox-icon">⚠</span>
-                    <div>
-                      <strong>Alerta Didáctica del Cálculo</strong>
-                      <p>Bajo rendimiento, inasistencia crítica o riesgo académico.</p>
-                    </div>
-                  </div>
-                </label>
-
-                <label class="checkbox-card checkbox-amber">
-                  <input type="checkbox" id="check-alerta-psicologia" />
-                  <div class="checkbox-content">
-                    <span class="checkbox-icon">♡</span>
-                    <div>
-                      <strong>Alerta Psicología</strong>
-                      <p>Requiere seguimiento emocional o psicológico.</p>
-                    </div>
-                  </div>
-                </label>
-
-              </div>
-
-              <div class="form-group mt-4">
-                <label for="reg-observaciones">Observaciones de la sesión</label>
-                <textarea id="reg-observaciones" rows="4"
-                  placeholder="Anota cualquier situación relevante de la sesión..."></textarea>
-              </div>
-
-              <div class="form-actions">
+              <div class="form-actions" style="margin-top:20px">
                 <button class="btn btn-success btn-lg" id="btn-guardar-asistencia">
                   Guardar Asistencia
                 </button>
@@ -530,14 +489,14 @@
         </li>
         <li>
           <div>
-            <strong>Activar alertas si aplica</strong>
-            <p>Marca <em>Alerta Didáctica del Cálculo</em> si hay bajo rendimiento o inasistencia crítica. Marca <em>Alerta Psicología</em> si algún estudiante requiere seguimiento emocional o psicológico.</p>
+            <strong>Reportar alertas por estudiante</strong>
+            <p>Debajo del nombre de cada estudiante verás los botones <em>⚠ Didáctica</em> y <em>♡ Psicología</em>. Actívalos si ese estudiante en particular requiere seguimiento académico o psicológico. Al activar una alerta aparece un campo de observación individual.</p>
           </div>
         </li>
         <li>
           <div>
-            <strong>Agregar observaciones y guardar</strong>
-            <p>Escribe cualquier situación relevante en el campo de observaciones y haz clic en <em>Guardar Asistencia</em>. Si ya existe un registro para ese día y grupo, se actualizará automáticamente.</p>
+            <strong>Guardar la asistencia</strong>
+            <p>Haz clic en <em>Guardar Asistencia</em> al finalizar. Si ya existe un registro para ese día y grupo, se actualizará automáticamente. Las alertas y observaciones quedan asociadas a cada estudiante.</p>
           </div>
         </li>
         <li>
