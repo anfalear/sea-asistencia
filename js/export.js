@@ -19,9 +19,11 @@ async function exportarAsistencias() {
   let query = db
     .from('asistencias')
     .select(`
-      fecha, curso_grupo, tipo_curso, presentes, ausentes,
-      alerta_precalculo, alerta_psicologia, observaciones, profesor_email,
-      detalle_asistencias(presente, estudiantes(codigo_estudiante, nombre_completo))
+      fecha, curso_grupo, tipo_curso, presentes, ausentes, profesor_email,
+      detalle_asistencias(
+        presente, alerta_precalculo, alerta_psicologia, observacion,
+        estudiantes(codigo_estudiante, nombre_completo)
+      )
     `)
     .gte('fecha', fechaIni)
     .lte('fecha', fechaFin)
@@ -51,16 +53,16 @@ async function exportarAsistencias() {
     if (detalles.length) {
       detalles.forEach(d => {
         rows.push({
-          'Fecha':               sesion.fecha,
-          'Grupo':               sesion.curso_grupo,
-          'Tipo Curso':          sesion.tipo_curso,
-          'Profesor':            sesion.profesor_email,
-          'Cód. Estudiante':     d.estudiantes?.codigo_estudiante || '',
-          'Nombre Estudiante':   d.estudiantes?.nombre_completo   || '',
-          'Asistencia':          d.presente ? 'Presente' : 'Ausente',
-          'Alerta Didáctica':    sesion.alerta_precalculo  ? 'Sí' : 'No',
-          'Alerta Psicología':   sesion.alerta_psicologia  ? 'Sí' : 'No',
-          'Observaciones':       sesion.observaciones || '',
+          'Fecha':             sesion.fecha,
+          'Grupo':             sesion.curso_grupo,
+          'Tipo Curso':        sesion.tipo_curso,
+          'Profesor':          sesion.profesor_email,
+          'Cód. Estudiante':   d.estudiantes?.codigo_estudiante || '',
+          'Nombre Estudiante': d.estudiantes?.nombre_completo   || '',
+          'Asistencia':        d.presente ? 'Presente' : 'Ausente',
+          'Alerta Didáctica':  d.alerta_precalculo ? 'Sí' : 'No',
+          'Alerta Psicología': d.alerta_psicologia ? 'Sí' : 'No',
+          'Observación':       d.observacion || '',
         });
       });
     } else {
@@ -72,9 +74,9 @@ async function exportarAsistencias() {
         'Cód. Estudiante':   '',
         'Nombre Estudiante': '',
         'Asistencia':        '',
-        'Alerta Didáctica':  sesion.alerta_precalculo ? 'Sí' : 'No',
-        'Alerta Psicología': sesion.alerta_psicologia ? 'Sí' : 'No',
-        'Observaciones':     sesion.observaciones || '',
+        'Alerta Didáctica':  '',
+        'Alerta Psicología': '',
+        'Observación':       '',
       });
     }
   });
