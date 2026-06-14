@@ -7,6 +7,7 @@ let _importPreview = [];
 function abrirImportador() {
   document.getElementById('modal-importador').classList.remove('hidden');
   document.getElementById('import-file').value = '';
+  document.getElementById('import-profesor').value = '';
   document.getElementById('import-grupo').value = '';
   document.getElementById('import-tipo').value = '';
   document.getElementById('import-preview-section').classList.add('hidden');
@@ -79,11 +80,12 @@ function renderPreviewImport() {
 }
 
 async function ejecutarImportacion() {
-  const grupo = document.getElementById('import-grupo').value.trim().toUpperCase();
-  const tipo  = document.getElementById('import-tipo').value;
+  const profesor = document.getElementById('import-profesor').value.trim().toLowerCase();
+  const grupo    = document.getElementById('import-grupo').value.trim().toUpperCase();
+  const tipo     = document.getElementById('import-tipo').value;
 
-  if (!grupo || !tipo) {
-    toast('Completa el grupo y el tipo de curso antes de importar.', 'warning');
+  if (!profesor || !grupo || !tipo) {
+    toast('Completa el email del profesor, el grupo y el tipo de curso antes de importar.', 'warning');
     return;
   }
 
@@ -101,7 +103,7 @@ async function ejecutarImportacion() {
     nombre_completo:   r.nombre_completo,
     curso_grupo:       grupo,
     tipo_curso:        tipo,
-    profesor_email:    currentUser.email,
+    profesor_email:    profesor,
     activo:            true,
   }));
 
