@@ -2,34 +2,35 @@
 //  SEA · Autenticación (Google OAuth + lista blanca)
 // ============================================================
 
-async function initAuth() {
-  const { data: { session } } = await db.auth.getSession();
-  if (session) {
-    const autorizado = await verificarWhitelist(session.user.email);
-    if (autorizado) {
-      setCurrentUser(session.user);
-      showApp();
-    } else {
-      await db.auth.signOut();
-      showLogin('Tu cuenta no está autorizada para acceder al sistema.');
-    }
-  } else {
-    showLogin();
-  }
+// Flag para propagar el mensaje de "no autorizado" al evento SIGNED_OUT
+// que dispara el signOut() inmediato al fallar la whitelist.
+let _noAutorizado = false;
 
-  db.auth.onAuthStateChange(async (_event, session) => {
+async function initAuth() {
+  // Supabase v2 recomienda suscribirse a onAuthStateChange ANTES de llamar
+  // a getSession(). En flujo PKCE (OAuth redirect), INITIAL_SESSION puede
+  // llegar con null mientras el código se intercambia; SIGNED_IN llega
+  // cuando el intercambio termina. No usar getSession() evita la carrera.
+  db.auth.onAuthStateChange(async (event, session) => {
+    console.log('[SEA] Auth:', event, session?.user?.email ?? '—');
+
     if (session) {
       const autorizado = await verificarWhitelist(session.user.email);
       if (autorizado) {
+        _noAutorizado = false;
         setCurrentUser(session.user);
         showApp();
       } else {
-        await db.auth.signOut();
-        showLogin('Tu cuenta no está autorizada para acceder al sistema.');
+        _noAutorizado = true;
+        await db.auth.signOut(); // dispara SIGNED_OUT → rama else
       }
     } else {
       setCurrentUser(null);
-      showLogin();
+      const msg = _noAutorizado
+        ? 'Tu cuenta no está autorizada. Contacta al administrador.'
+        : '';
+      _noAutorizado = false;
+      showLogin(msg);
     }
   });
 }
@@ -41,8 +42,9 @@ async function verificarWhitelist(email) {
     .eq('email', email)
     .maybeSingle();
   if (error) {
-    console.error('[SEA] Whitelist query error:', error.code, error.message);
+    console.error('[SEA] Whitelist error:', error.code, error.message);
   }
+  console.log('[SEA] Whitelist check:', email, '→', data ? 'autorizado' : 'no encontrado');
   return data !== null;
 }
 
