@@ -35,11 +35,14 @@ async function initAuth() {
 }
 
 async function verificarWhitelist(email) {
-  const { data } = await db
+  const { data, error } = await db
     .from('email_whitelist')
     .select('email')
     .eq('email', email)
     .maybeSingle();
+  if (error) {
+    console.error('[SEA] Whitelist query error:', error.code, error.message);
+  }
   return data !== null;
 }
 
