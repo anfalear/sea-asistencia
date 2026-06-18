@@ -1,10 +1,8 @@
 // ============================================================
 //  SEA Matemáticas UIS · Configuración Supabase
+//  Credenciales cargadas desde js/env.js (no versionado).
+//  Copia js/env.example.js → js/env.js y rellena tus valores.
 // ============================================================
-
-const SUPABASE_URL     = 'https://fqbsyywbjgasscnnsmvu.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_exUTEo8Q1L6O-O0n3rqEyA_WjYVihqh';
-const ADMIN_EMAIL       = 'aflaok10@gmail.com';
 
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);

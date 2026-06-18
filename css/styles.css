@@ -593,39 +593,56 @@ tr:hover td { background: var(--primary-light); }
   background: #fff5f5;
 }
 
-/* Clickable row (top part) */
+/* Top row of student card */
 .student-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 12px 14px;
-  cursor: pointer;
-  user-select: none;
-  transition: background var(--ease);
+  gap: 10px;
 }
-.student-row:hover { background: rgba(0,0,0,.04); }
 
-.student-info { flex: 1; }
+.student-info { flex: 1; min-width: 0; }
 .student-name { font-weight: 600; font-size: 13.5px; }
 .student-code { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
 
-.student-toggle {
-  width: 36px; height: 36px;
-  border-radius: 50%;
+/* Botones de presencia (Asistió / No asistió) */
+.presence-btns {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  font-weight: 700;
+  gap: 6px;
   flex-shrink: 0;
-  margin-left: 10px;
-  transition: background var(--ease);
 }
 
-.student-item.presente .student-toggle { background: var(--green); color: #fff; }
-.student-item.ausente  .student-toggle { background: #fca5a5;       color: var(--red); }
-.student-item:not(.presente):not(.ausente) .student-toggle {
-  background: var(--border); color: var(--text-muted);
+.btn-presencia {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 11px;
+  border-radius: var(--r-sm);
+  font-size: 12px;
+  font-weight: 600;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  cursor: pointer;
+  transition: background var(--ease), border-color var(--ease), color var(--ease);
+  white-space: nowrap;
+  touch-action: manipulation;
+}
+
+.btn-asistio { color: var(--text-muted); }
+.btn-asistio:hover,
+.btn-asistio.active {
+  background: var(--green-bg);
+  border-color: var(--green);
+  color: var(--green);
+}
+
+.btn-ausente { color: var(--text-muted); }
+.btn-ausente:hover,
+.btn-ausente.active {
+  background: #fff5f5;
+  border-color: #fca5a5;
+  color: var(--red);
 }
 
 /* Alert controls (bottom part of card) */
@@ -676,6 +693,48 @@ tr:hover td { background: var(--primary-light); }
   padding: 5px 9px;
   width: 100%;
 }
+
+/* ============================================================
+   REGISTRO · Toolbar (instrucción + orden)
+   ============================================================ */
+.registro-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.sort-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   ESTADÍSTICAS MODAL · Sección de alertas
+   ============================================================ */
+.alertas-resumen-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0 8px;
+  border-top: 1px solid var(--border);
+  margin-bottom: 6px;
+}
+
+.alerta-mini-item {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+.alerta-mini-item:last-child { border-bottom: none; }
+
+.alerta-mini-fecha { font-size: 11.5px; color: var(--text-muted); }
+.alerta-mini-obs   { font-size: 12px; font-style: italic; color: var(--text-muted); margin-top: 3px; }
 
 /* ============================================================
    ALERTAS (tabs)
@@ -902,35 +961,96 @@ tr:hover td { background: var(--primary-light); }
   .grid-2col { grid-template-columns: 1fr; }
 }
 
-@media (max-width: 720px) {
+@media (max-width: 768px) {
   :root { --sidebar-w: 240px; }
 
+  /* Sidebar deslizable */
   .sidebar {
     position: fixed;
     top: 0; left: 0; bottom: 0;
     transform: translateX(-100%);
     box-shadow: var(--shadow-lg);
   }
-
-  .sidebar.open {
-    transform: translateX(0);
-  }
-
+  .sidebar.open { transform: translateX(0); }
   .sidebar-toggle { display: block; }
   .btn-menu       { display: block; }
 
-  .main-content { padding: 16px; }
-  .stats-grid   { grid-template-columns: 1fr 1fr; }
-  .alerts-check { grid-template-columns: 1fr; }
+  /* Topbar */
+  .topbar { padding: 0 14px; gap: 10px; }
+  .topbar-title { font-size: 14px; }
+  .date-badge { display: none; }
 
+  /* Contenido */
+  .main-content { padding: 14px; }
+
+  /* Stats */
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+
+  /* Formularios */
   .form-row { flex-direction: column; }
   .form-row .form-group { min-width: 100%; }
+
+  /* Inputs y selects más grandes para táctil */
+  input, select, textarea {
+    padding: 11px 13px;
+    font-size: 16px; /* Evita zoom automático en iOS */
+    min-height: 44px;
+  }
+
+  /* Botones principales más grandes */
+  .btn { padding: 11px 18px; font-size: 14px; min-height: 44px; }
+  .btn-sm { padding: 8px 14px; font-size: 13px; min-height: 36px; }
+  .btn-lg { padding: 14px 24px; font-size: 15px; }
+
+  /* Botón guardar asistencia: ancho completo */
+  #btn-guardar-asistencia { width: 100%; }
+
+  /* Tarjetas de registro */
+  .student-list { grid-template-columns: 1fr; }
+
+  .student-row { flex-wrap: wrap; gap: 10px; }
+
+  .presence-btns {
+    width: 100%;
+    gap: 8px;
+  }
+  .btn-presencia {
+    flex: 1;
+    padding: 10px 8px;
+    font-size: 13px;
+    min-height: 44px;
+  }
+
+  /* Botones de alerta más grandes */
+  .btn-alerta-est {
+    padding: 8px 14px;
+    font-size: 13px;
+    min-height: 40px;
+  }
+
+  /* Toolbar de registro */
+  .registro-toolbar { flex-direction: column; align-items: flex-start; }
+  .sort-controls { width: 100%; justify-content: flex-start; }
+
+  /* Registro summary */
+  .registro-summary { width: 100%; justify-content: flex-start; }
+
+  /* Modal: ocupa más pantalla */
+  .modal { padding: 8px; }
+  .modal-container {
+    max-height: 96vh;
+    border-radius: 14px 14px 0 0;
+    margin-top: auto;
+  }
+
+  /* Tabla: scroll horizontal */
+  .table-wrap { -webkit-overflow-scrolling: touch; }
 }
 
 @media (max-width: 480px) {
   .login-container { padding: 32px 22px; margin: 16px; }
   .stats-grid { grid-template-columns: 1fr; }
-  .student-list { grid-template-columns: 1fr; }
+  .topbar-actions .btn-ghost { display: none; }
 }
 
 /* ============================================================

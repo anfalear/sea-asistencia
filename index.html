@@ -225,10 +225,17 @@
               </div>
             </div>
             <div class="card-body">
-              <p style="font-size:12.5px;color:var(--text-muted);margin-bottom:14px">
-                Haz clic en el nombre del estudiante para marcar <strong>Presente ✓</strong> o <strong>Ausente ✕</strong>.
-                Usa los botones <strong>⚠ Didáctica</strong> y <strong>♡ Psicología</strong> para reportar alertas individuales.
-              </p>
+              <div class="registro-toolbar">
+                <p style="font-size:12.5px;color:var(--text-muted);margin:0">
+                  Usa <strong>✓ Asistió</strong> / <strong>✕ No asistió</strong> en cada tarjeta.
+                  Los no marcados se guardarán como <strong>ausentes</strong>.
+                </p>
+                <div class="sort-controls">
+                  <span>Ordenar:</span>
+                  <button class="btn btn-primary btn-sm" id="sort-btn-nombre" onclick="sortEstudiantes('nombre')">Nombre</button>
+                  <button class="btn btn-ghost btn-sm" id="sort-btn-codigo" onclick="sortEstudiantes('codigo')">Código</button>
+                </div>
+              </div>
               <div class="student-list" id="student-list">
                 <!-- Se renderiza con JS -->
               </div>
@@ -484,7 +491,7 @@
         <li>
           <div>
             <strong>Marcar presencia por estudiante</strong>
-            <p>Haz clic en la tarjeta de cada estudiante para alternar entre <strong>Presente ✓</strong>, <strong>Ausente ✕</strong> o sin marcar (·). El contador se actualiza en tiempo real.</p>
+            <p>Usa el botón <strong>✓ Asistió</strong> para los que asistieron y <strong>✕ No asistió</strong> para los ausentes. Los estudiantes sin marcar se guardarán como <strong>ausentes</strong> al guardar. El contador se actualiza en tiempo real.</p>
           </div>
         </li>
         <li>
@@ -546,6 +553,14 @@
             <div class="stat-mini-value" id="est-stat-pct">—</div>
             <div class="stat-mini-label">% Asistencia</div>
           </div>
+        </div>
+
+        <div id="modal-est-alertas" class="hidden" style="margin-top:20px">
+          <div class="alertas-resumen-header">
+            <span style="font-weight:600;font-size:13px">Alertas registradas</span>
+            <span class="badge badge-red" id="est-stat-alertas">0</span>
+          </div>
+          <div id="est-alertas-list"></div>
         </div>
       </div>
     </div>
@@ -637,6 +652,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="js/env.js"></script>
 <script src="js/config.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/auth.js"></script>

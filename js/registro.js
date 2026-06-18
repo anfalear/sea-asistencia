@@ -5,6 +5,7 @@
 let grupoActual = null;
 let estudiantesActuales = [];
 let asistenciaExistente = null;
+let ordenActual = 'nombre';
 
 async function initRegistro() {
   const fechaInput = document.getElementById('reg-fecha');
@@ -78,8 +79,13 @@ async function cargarGrupo() {
 
   estudiantesActuales = ests;
   grupoActual = { grupo, fecha, tipo_curso: ests[0].tipo_curso };
+  ordenActual = 'nombre';
 
-  // Verificar registro existente e incluir columnas de alerta por estudiante
+  // Reiniciar botones de orden
+  document.getElementById('sort-btn-nombre')?.classList.replace('btn-ghost', 'btn-primary');
+  document.getElementById('sort-btn-codigo')?.classList.replace('btn-primary', 'btn-ghost');
+
+  // Verificar registro existente
   const { data: existing } = await db
     .from('asistencias')
     .select('*, detalle_asistencias(estudiante_id, presente, alerta_precalculo, alerta_psicologia, observacion)')
@@ -114,13 +120,15 @@ function renderStudentList(estudiantes, existing) {
 
   container.innerHTML = estudiantes.map(est => {
     const d = detalleMap[est.id];
-    let estadoClass = '';
-    let icon = '·';
 
+    let estadoClass = '';
     if (d) {
-      if (d.presente === true)  { estadoClass = 'presente'; icon = '✓'; }
-      if (d.presente === false) { estadoClass = 'ausente';  icon = '✕'; }
+      if (d.presente === true)  estadoClass = 'presente';
+      if (d.presente === false) estadoClass = 'ausente';
     }
+
+    const isPresenteActive = d?.presente === true;
+    const isAusenteActive  = d?.presente === false;
 
     const preActive = d?.alerta_precalculo ? ' active' : '';
     const psiActive = d?.alerta_psicologia ? ' active' : '';
@@ -128,12 +136,21 @@ function renderStudentList(estudiantes, existing) {
 
     return `
       <div class="student-item ${estadoClass}" data-id="${est.id}">
-        <div class="student-row" onclick="togglePresencia(this.closest('.student-item'))">
+        <div class="student-row">
           <div class="student-info">
             <div class="student-name">${escapeHtml(est.nombre_completo)}</div>
             <div class="student-code">${est.codigo_estudiante}</div>
           </div>
-          <div class="student-toggle">${icon}</div>
+          <div class="presence-btns">
+            <button class="btn-presencia btn-asistio${isPresenteActive ? ' active' : ''}"
+                    onclick="marcarPresencia(this, 'presente')" type="button">
+              ✓ Asistió
+            </button>
+            <button class="btn-presencia btn-ausente${isAusenteActive ? ' active' : ''}"
+                    onclick="marcarPresencia(this, 'ausente')" type="button">
+              ✕ No asistió
+            </button>
+          </div>
         </div>
         <div class="student-extra">
           <div class="student-alert-btns">
@@ -155,18 +172,22 @@ function renderStudentList(estudiantes, existing) {
   }).join('');
 }
 
-function togglePresencia(el) {
-  if (el.classList.contains('presente')) {
-    el.classList.remove('presente');
-    el.classList.add('ausente');
-    el.querySelector('.student-toggle').textContent = '✕';
-  } else if (el.classList.contains('ausente')) {
-    el.classList.remove('ausente');
-    el.querySelector('.student-toggle').textContent = '·';
-  } else {
-    el.classList.add('presente');
-    el.querySelector('.student-toggle').textContent = '✓';
+// ---- Presencia: dos botones explícitos ----
+
+function marcarPresencia(btn, estado) {
+  const item = btn.closest('.student-item');
+  const isActive = btn.classList.contains('active');
+
+  // Desactivar ambos botones y quitar estado visual del card
+  item.querySelectorAll('.btn-presencia').forEach(b => b.classList.remove('active'));
+  item.classList.remove('presente', 'ausente');
+
+  if (!isActive) {
+    // Activar el botón pulsado
+    btn.classList.add('active');
+    item.classList.add(estado);
   }
+
   actualizarContadores();
 }
 
@@ -177,13 +198,54 @@ function toggleAlertaEst(btn) {
 function actualizarContadores() {
   const items = document.querySelectorAll('.student-item');
   let presentes = 0;
-  let ausentes  = 0;
   items.forEach(it => {
     if (it.classList.contains('presente')) presentes++;
-    if (it.classList.contains('ausente'))  ausentes++;
   });
+  const total = items.length;
   document.getElementById('count-presentes').textContent = presentes;
-  document.getElementById('count-ausentes').textContent  = ausentes;
+  document.getElementById('count-ausentes').textContent  = total - presentes;
+}
+
+// ---- Ordenar tarjetas ----
+
+function captureCurrentState() {
+  const detalle = [];
+  document.querySelectorAll('.student-item').forEach(it => {
+    detalle.push({
+      estudiante_id:     it.dataset.id,
+      presente:          it.classList.contains('presente') ? true
+                       : it.classList.contains('ausente')  ? false
+                       : null,
+      alerta_precalculo: it.querySelector('.btn-alerta-est[data-tipo="precalculo"]')?.classList.contains('active') || false,
+      alerta_psicologia: it.querySelector('.btn-alerta-est[data-tipo="psicologia"]')?.classList.contains('active') || false,
+      observacion:       it.querySelector('.est-obs')?.value.trim() || null,
+    });
+  });
+  return { detalle_asistencias: detalle };
+}
+
+function sortEstudiantes(campo) {
+  const snapshot = captureCurrentState();
+  ordenActual = campo;
+
+  if (campo === 'nombre') {
+    estudiantesActuales.sort((a, b) =>
+      a.nombre_completo.localeCompare(b.nombre_completo, 'es'));
+  } else {
+    estudiantesActuales.sort((a, b) =>
+      a.codigo_estudiante.localeCompare(b.codigo_estudiante));
+  }
+
+  // Actualizar visual de botones de orden
+  const btnNombre = document.getElementById('sort-btn-nombre');
+  const btnCodigo = document.getElementById('sort-btn-codigo');
+  if (btnNombre && btnCodigo) {
+    btnNombre.className = `btn btn-sm ${campo === 'nombre' ? 'btn-primary' : 'btn-ghost'}`;
+    btnCodigo.className = `btn btn-sm ${campo === 'codigo' ? 'btn-primary' : 'btn-ghost'}`;
+  }
+
+  renderStudentList(estudiantesActuales, snapshot);
+  actualizarContadores();
 }
 
 // ---- Guardar asistencia ----
@@ -191,7 +253,15 @@ function actualizarContadores() {
 async function guardarAsistencia() {
   if (!grupoActual) return;
 
-  const items   = document.querySelectorAll('.student-item');
+  const items = document.querySelectorAll('.student-item');
+  if (!items.length) return;
+
+  // Si nadie está marcado como presente, confirmar antes de guardar todos como ausentes
+  const hayPresentes = [...items].some(it => it.classList.contains('presente'));
+  if (!hayPresentes) {
+    if (!confirm('Ningún estudiante fue marcado como presente.\n¿Guardar a todos como ausentes?')) return;
+  }
+
   let presentes = 0;
   let ausentes  = 0;
   const detalle = [];
@@ -199,32 +269,24 @@ async function guardarAsistencia() {
   items.forEach(it => {
     const estId  = it.dataset.id;
     const isPres = it.classList.contains('presente');
-    const isAus  = it.classList.contains('ausente');
 
-    if (isPres || isAus) {
-      if (isPres) presentes++;
-      if (isAus)  ausentes++;
+    if (isPres) presentes++;
+    else        ausentes++;
 
-      const alertaPre = it.querySelector('.btn-alerta-est[data-tipo="precalculo"]')
-                           ?.classList.contains('active') || false;
-      const alertaPsi = it.querySelector('.btn-alerta-est[data-tipo="psicologia"]')
-                           ?.classList.contains('active') || false;
-      const obs = it.querySelector('.est-obs')?.value.trim() || null;
+    const alertaPre = it.querySelector('.btn-alerta-est[data-tipo="precalculo"]')
+                         ?.classList.contains('active') || false;
+    const alertaPsi = it.querySelector('.btn-alerta-est[data-tipo="psicologia"]')
+                         ?.classList.contains('active') || false;
+    const obs = it.querySelector('.est-obs')?.value.trim() || null;
 
-      detalle.push({
-        estudiante_id:     estId,
-        presente:          isPres,
-        alerta_precalculo: alertaPre,
-        alerta_psicologia: alertaPsi,
-        observacion:       obs,
-      });
-    }
+    detalle.push({
+      estudiante_id:     estId,
+      presente:          isPres,
+      alerta_precalculo: alertaPre,
+      alerta_psicologia: alertaPsi,
+      observacion:       obs,
+    });
   });
-
-  if (detalle.length === 0) {
-    toast('Marca al menos un estudiante antes de guardar.', 'warning');
-    return;
-  }
 
   const payload = {
     fecha:          grupoActual.fecha,
@@ -275,19 +337,17 @@ async function guardarAsistencia() {
     asistenciaId = data.id;
   }
 
-  if (detalle.length > 0) {
-    const detallePayload = detalle.map(d => ({
-      asistencia_id:     asistenciaId,
-      estudiante_id:     d.estudiante_id,
-      presente:          d.presente,
-      alerta_precalculo: d.alerta_precalculo,
-      alerta_psicologia: d.alerta_psicologia,
-      observacion:       d.observacion,
-    }));
+  const detallePayload = detalle.map(d => ({
+    asistencia_id:     asistenciaId,
+    estudiante_id:     d.estudiante_id,
+    presente:          d.presente,
+    alerta_precalculo: d.alerta_precalculo,
+    alerta_psicologia: d.alerta_psicologia,
+    observacion:       d.observacion,
+  }));
 
-    const { error: detErr } = await db.from('detalle_asistencias').insert(detallePayload);
-    if (detErr) console.warn('Error en detalle:', detErr.message);
-  }
+  const { error: detErr } = await db.from('detalle_asistencias').insert(detallePayload);
+  if (detErr) console.warn('Error en detalle:', detErr.message);
 
   btn.disabled = false;
   btn.textContent = 'Guardar Asistencia';

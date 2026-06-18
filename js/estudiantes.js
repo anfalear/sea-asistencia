@@ -67,6 +67,19 @@ async function cargarEstudiantes() {
     return;
   }
 
+  // Contar inasistencias por estudiante
+  const ids = data.map(e => e.id);
+  const ausenciasMap = {};
+  const { data: ausData } = await db
+    .from('detalle_asistencias')
+    .select('estudiante_id')
+    .in('estudiante_id', ids)
+    .eq('presente', false);
+
+  ausData?.forEach(d => {
+    ausenciasMap[d.estudiante_id] = (ausenciasMap[d.estudiante_id] || 0) + 1;
+  });
+
   container.innerHTML = `
     <div class="table-wrap">
       <table>
@@ -78,12 +91,16 @@ async function cargarEstudiantes() {
             <th>Tipo</th>
             <th>Profesor</th>
             <th>Estado</th>
+            <th>Inasistencias</th>
             <th></th>
             ${isAdmin ? '<th>Acciones</th>' : ''}
           </tr>
         </thead>
         <tbody>
-          ${data.map(e => `
+          ${data.map(e => {
+            const inasistencias = ausenciasMap[e.id] || 0;
+            const badgeColor = inasistencias >= 3 ? 'badge-red' : inasistencias >= 1 ? 'badge-amber' : 'badge-gray';
+            return `
             <tr>
               <td style="font-family:monospace;font-size:12.5px">${e.codigo_estudiante}</td>
               <td><strong>${e.nombre_completo}</strong></td>
@@ -98,6 +115,9 @@ async function cargarEstudiantes() {
                 <span class="badge ${e.activo ? 'badge-green' : 'badge-gray'}">
                   ${e.activo ? 'Activo' : 'Inactivo'}
                 </span>
+              </td>
+              <td>
+                <span class="badge ${badgeColor}">${inasistencias}</span>
               </td>
               <td>
                 <button class="btn btn-ghost btn-sm"
@@ -120,7 +140,7 @@ async function cargarEstudiantes() {
                 </div>
               </td>` : ''}
             </tr>
-          `).join('')}
+          `}).join('')}
         </tbody>
       </table>
     </div>

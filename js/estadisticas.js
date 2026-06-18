@@ -7,11 +7,12 @@ async function mostrarEstadisticasEstudiante(estudianteId, nombreEstudiante) {
   document.getElementById('modal-est-titulo').textContent = nombreEstudiante;
   document.getElementById('modal-est-loading').classList.remove('hidden');
   document.getElementById('modal-est-content').classList.add('hidden');
+  document.getElementById('modal-est-alertas').classList.add('hidden');
   modal.classList.remove('hidden');
 
   const { data, error } = await db
     .from('detalle_asistencias')
-    .select('presente, asistencias(fecha)')
+    .select('presente, alerta_precalculo, alerta_psicologia, observacion, asistencias(fecha)')
     .eq('estudiante_id', estudianteId);
 
   document.getElementById('modal-est-loading').classList.add('hidden');
@@ -33,7 +34,11 @@ async function mostrarEstadisticasEstudiante(estudianteId, nombreEstudiante) {
   document.getElementById('est-stat-ausente').textContent = ausencias;
   document.getElementById('est-stat-pct').textContent     = porcentaje + '%';
 
+  // Mostrar contenido antes de crear el chart para que el canvas tenga dimensiones
   document.getElementById('modal-est-content').classList.remove('hidden');
+
+  // Esperar un frame para que el navegador pinte el canvas antes de que Chart.js lo mida
+  await new Promise(resolve => requestAnimationFrame(resolve));
 
   if (window._chartAsistencia) {
     window._chartAsistencia.destroy();
@@ -68,6 +73,32 @@ async function mostrarEstadisticasEstudiante(estudianteId, nombreEstudiante) {
       }
     }
   });
+
+  // Sección de alertas
+  const alertas = data
+    .filter(d => d.alerta_precalculo || d.alerta_psicologia)
+    .sort((a, b) => (b.asistencias?.fecha || '').localeCompare(a.asistencias?.fecha || ''));
+
+  if (alertas.length > 0) {
+    document.getElementById('est-stat-alertas').textContent = alertas.length;
+    document.getElementById('est-alertas-list').innerHTML = alertas.map(a => {
+      const tipos = [
+        a.alerta_precalculo ? '<span class="badge badge-red">Didáctica</span>' : '',
+        a.alerta_psicologia ? '<span class="badge badge-amber">Psicología</span>' : '',
+      ].filter(Boolean).join(' ');
+
+      return `
+        <div class="alerta-mini-item">
+          <div class="alerta-mini-fecha">${formatDate(a.asistencias?.fecha || '')}</div>
+          <div style="margin-top:3px">${tipos}</div>
+          ${a.observacion
+            ? `<div class="alerta-mini-obs">"${escapeHtml(a.observacion)}"</div>`
+            : ''}
+        </div>
+      `;
+    }).join('');
+    document.getElementById('modal-est-alertas').classList.remove('hidden');
+  }
 }
 
 function cerrarModalEstadisticas() {
