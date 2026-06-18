@@ -593,57 +593,42 @@ tr:hover td { background: var(--primary-light); }
   background: #fff5f5;
 }
 
-/* Top row of student card */
-.student-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 14px;
-  gap: 10px;
+/* Cabecera del card (nombre y código) */
+.student-header {
+  padding: 12px 14px 10px;
 }
-
-.student-info { flex: 1; min-width: 0; }
 .student-name { font-weight: 600; font-size: 13.5px; }
 .student-code { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
 
-/* Botones de presencia (Asistió / No asistió) */
-.presence-btns {
-  display: flex;
-  gap: 6px;
-  flex-shrink: 0;
+/* Fila de botones Asistió / No asistió */
+.student-presence {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 0 14px 12px;
 }
 
-.btn-presencia {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px 11px;
+.btn-presence-asistio,
+.btn-presence-ausente {
+  padding: 10px 6px;
   border-radius: var(--r-sm);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
-  border: 1.5px solid var(--border);
-  background: var(--surface);
+  border: 2px solid var(--border);
+  background: var(--bg);
   cursor: pointer;
+  text-align: center;
   transition: background var(--ease), border-color var(--ease), color var(--ease);
-  white-space: nowrap;
   touch-action: manipulation;
 }
 
-.btn-asistio { color: var(--text-muted); }
-.btn-asistio:hover,
-.btn-asistio.active {
-  background: var(--green-bg);
-  border-color: var(--green);
-  color: var(--green);
-}
+.btn-presence-asistio { color: var(--text-muted); }
+.btn-presence-asistio:hover { border-color: var(--green); color: var(--green); background: var(--green-bg); }
+.btn-presence-asistio.active { border-color: var(--green); background: var(--green); color: #fff; }
 
-.btn-ausente { color: var(--text-muted); }
-.btn-ausente:hover,
-.btn-ausente.active {
-  background: #fff5f5;
-  border-color: #fca5a5;
-  color: var(--red);
-}
+.btn-presence-ausente { color: var(--text-muted); }
+.btn-presence-ausente:hover { border-color: #fca5a5; color: var(--red); background: #fff5f5; }
+.btn-presence-ausente.active { border-color: var(--red); background: var(--red); color: #fff; }
 
 /* Alert controls (bottom part of card) */
 .student-extra {
@@ -1008,17 +993,13 @@ tr:hover td { background: var(--primary-light); }
   /* Tarjetas de registro */
   .student-list { grid-template-columns: 1fr; }
 
-  .student-row { flex-wrap: wrap; gap: 10px; }
+  .student-presence { gap: 10px; }
 
-  .presence-btns {
-    width: 100%;
-    gap: 8px;
-  }
-  .btn-presencia {
-    flex: 1;
-    padding: 10px 8px;
-    font-size: 13px;
-    min-height: 44px;
+  .btn-presence-asistio,
+  .btn-presence-ausente {
+    padding: 13px 6px;
+    font-size: 14px;
+    min-height: 48px;
   }
 
   /* Botones de alerta más grandes */

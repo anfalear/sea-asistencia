@@ -136,21 +136,19 @@ function renderStudentList(estudiantes, existing) {
 
     return `
       <div class="student-item ${estadoClass}" data-id="${est.id}">
-        <div class="student-row">
-          <div class="student-info">
-            <div class="student-name">${escapeHtml(est.nombre_completo)}</div>
-            <div class="student-code">${est.codigo_estudiante}</div>
-          </div>
-          <div class="presence-btns">
-            <button class="btn-presencia btn-asistio${isPresenteActive ? ' active' : ''}"
-                    onclick="marcarPresencia(this, 'presente')" type="button">
-              ✓ Asistió
-            </button>
-            <button class="btn-presencia btn-ausente${isAusenteActive ? ' active' : ''}"
-                    onclick="marcarPresencia(this, 'ausente')" type="button">
-              ✕ No asistió
-            </button>
-          </div>
+        <div class="student-header">
+          <div class="student-name">${escapeHtml(est.nombre_completo)}</div>
+          <div class="student-code">${est.codigo_estudiante}</div>
+        </div>
+        <div class="student-presence">
+          <button class="btn-presence-asistio${isPresenteActive ? ' active' : ''}"
+                  onclick="marcarPresencia(this, 'presente')" type="button">
+            ✓ Asistió
+          </button>
+          <button class="btn-presence-ausente${isAusenteActive ? ' active' : ''}"
+                  onclick="marcarPresencia(this, 'ausente')" type="button">
+            ✕ No asistió
+          </button>
         </div>
         <div class="student-extra">
           <div class="student-alert-btns">
@@ -179,7 +177,7 @@ function marcarPresencia(btn, estado) {
   const isActive = btn.classList.contains('active');
 
   // Desactivar ambos botones y quitar estado visual del card
-  item.querySelectorAll('.btn-presencia').forEach(b => b.classList.remove('active'));
+  item.querySelectorAll('.btn-presence-asistio, .btn-presence-ausente').forEach(b => b.classList.remove('active'));
   item.classList.remove('presente', 'ausente');
 
   if (!isActive) {
@@ -216,8 +214,8 @@ function captureCurrentState() {
       presente:          it.classList.contains('presente') ? true
                        : it.classList.contains('ausente')  ? false
                        : null,
-      alerta_precalculo: it.querySelector('.btn-alerta-est[data-tipo="precalculo"]')?.classList.contains('active') || false,
-      alerta_psicologia: it.querySelector('.btn-alerta-est[data-tipo="psicologia"]')?.classList.contains('active') || false,
+      alerta_precalculo: it.querySelector('[data-tipo="precalculo"]')?.classList.contains('active') || false,
+      alerta_psicologia: it.querySelector('[data-tipo="psicologia"]')?.classList.contains('active') || false,
       observacion:       it.querySelector('.est-obs')?.value.trim() || null,
     });
   });
