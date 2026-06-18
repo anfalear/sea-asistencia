@@ -74,14 +74,15 @@ async function mostrarEstadisticasEstudiante(estudianteId, nombreEstudiante) {
     }
   });
 
-  // Sección de alertas
-  const alertas = data
-    .filter(d => d.alerta_precalculo || d.alerta_psicologia)
+  // Sección de alertas y observaciones
+  const notables = data
+    .filter(d => d.alerta_precalculo || d.alerta_psicologia || d.observacion)
     .sort((a, b) => (b.asistencias?.fecha || '').localeCompare(a.asistencias?.fecha || ''));
 
-  if (alertas.length > 0) {
-    document.getElementById('est-stat-alertas').textContent = alertas.length;
-    document.getElementById('est-alertas-list').innerHTML = alertas.map(a => {
+  if (notables.length > 0) {
+    const numAlertas = notables.filter(d => d.alerta_precalculo || d.alerta_psicologia).length;
+    document.getElementById('est-stat-alertas').textContent = numAlertas || notables.length;
+    document.getElementById('est-alertas-list').innerHTML = notables.map(a => {
       const tipos = [
         a.alerta_precalculo ? '<span class="badge badge-red">Didáctica</span>' : '',
         a.alerta_psicologia ? '<span class="badge badge-amber">Psicología</span>' : '',
@@ -90,7 +91,7 @@ async function mostrarEstadisticasEstudiante(estudianteId, nombreEstudiante) {
       return `
         <div class="alerta-mini-item">
           <div class="alerta-mini-fecha">${formatDate(a.asistencias?.fecha || '')}</div>
-          <div style="margin-top:3px">${tipos}</div>
+          ${tipos ? `<div style="margin-top:3px">${tipos}</div>` : ''}
           ${a.observacion
             ? `<div class="alerta-mini-obs">"${escapeHtml(a.observacion)}"</div>`
             : ''}
