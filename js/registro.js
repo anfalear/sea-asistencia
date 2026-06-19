@@ -344,8 +344,17 @@ async function guardarAsistencia() {
     observacion:       d.observacion,
   }));
 
+  const obsGuardadas = detallePayload.filter(d => d.observacion).length;
+  console.log('[SEA] Guardando detalle:', detallePayload.length, 'filas,', obsGuardadas, 'con observación', detallePayload.filter(d=>d.observacion).map(d=>d.observacion));
+
   const { error: detErr } = await db.from('detalle_asistencias').insert(detallePayload);
-  if (detErr) console.warn('Error en detalle:', detErr.message);
+  if (detErr) {
+    console.error('[SEA] Error insertando detalle:', detErr.message);
+    toast('Error al guardar el detalle: ' + detErr.message, 'error');
+    btn.disabled = false;
+    btn.textContent = 'Guardar Asistencia';
+    return;
+  }
 
   btn.disabled = false;
   btn.textContent = 'Guardar Asistencia';
