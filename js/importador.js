@@ -44,10 +44,12 @@ function procesarArchivoSIAE(event) {
         const nombre_completo = [p1, p2, n1, n2].filter(Boolean).join(' ');
 
         return {
-          codigo_estudiante: String(r['codigo_est'] || '').trim(),
+          codigo_estudiante:  String(r['codigo_est']          || '').trim(),
           nombre_completo,
-          programa:          String(r['programa_academico'] || '').trim(),
-          email:             String(r['email'] || '').trim().toLowerCase(),
+          programa:           String(r['programa_academico']  || '').trim(),
+          email:              String(r['email']               || '').trim().toLowerCase() || null,
+          direccion_electron: String(r['direccion_electron']  || '').trim().toLowerCase() || null,
+          telefono_reside:    String(r['telefono_reside']     || '').trim() || null,
         };
       })
       .filter(r => r.codigo_estudiante && r.nombre_completo);
@@ -99,12 +101,15 @@ async function ejecutarImportacion() {
   btn.textContent = 'Importando...';
 
   const payload = _importPreview.map(r => ({
-    codigo_estudiante: r.codigo_estudiante,
-    nombre_completo:   r.nombre_completo,
-    curso_grupo:       grupo,
-    tipo_curso:        tipo,
-    profesor_email:    profesor,
-    activo:            true,
+    codigo_estudiante:  r.codigo_estudiante,
+    nombre_completo:    r.nombre_completo,
+    curso_grupo:        grupo,
+    tipo_curso:         tipo,
+    profesor_email:     profesor,
+    email:              r.email              || null,
+    direccion_electron: r.direccion_electron || null,
+    telefono_reside:    r.telefono_reside    || null,
+    activo:             true,
   }));
 
   const { data, error } = await db

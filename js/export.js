@@ -22,7 +22,7 @@ async function exportarAsistencias() {
       fecha, curso_grupo, tipo_curso, presentes, ausentes, profesor_email,
       detalle_asistencias(
         presente, alerta_precalculo, alerta_psicologia, observacion,
-        estudiantes(codigo_estudiante, nombre_completo)
+        estudiantes(codigo_estudiante, nombre_completo, email, direccion_electron, telefono_reside)
       )
     `)
     .gte('fecha', fechaIni)
@@ -57,8 +57,11 @@ async function exportarAsistencias() {
           'Grupo':             sesion.curso_grupo,
           'Tipo Curso':        sesion.tipo_curso,
           'Profesor':          sesion.profesor_email,
-          'Cód. Estudiante':   d.estudiantes?.codigo_estudiante || '',
-          'Nombre Estudiante': d.estudiantes?.nombre_completo   || '',
+          'Cód. Estudiante':   d.estudiantes?.codigo_estudiante  || '',
+          'Nombre Estudiante': d.estudiantes?.nombre_completo    || '',
+          'Email':             d.estudiantes?.email              || '',
+          'Dir. Electrónica':  d.estudiantes?.direccion_electron || '',
+          'Teléfono':          d.estudiantes?.telefono_reside    || '',
           'Asistencia':        d.presente ? 'Presente' : 'Ausente',
           'Alerta Didáctica':  d.alerta_precalculo ? 'Sí' : 'No',
           'Alerta Psicología': d.alerta_psicologia ? 'Sí' : 'No',
@@ -86,8 +89,8 @@ async function exportarAsistencias() {
   // Anchos de columna aproximados
   ws['!cols'] = [
     { wch: 12 }, { wch: 12 }, { wch: 22 }, { wch: 28 },
-    { wch: 14 }, { wch: 32 }, { wch: 10 },
-    { wch: 18 }, { wch: 18 }, { wch: 36 },
+    { wch: 14 }, { wch: 32 }, { wch: 30 }, { wch: 30 }, { wch: 16 },
+    { wch: 10 }, { wch: 18 }, { wch: 18 }, { wch: 36 },
   ];
 
   const wb = XLSX.utils.book_new();

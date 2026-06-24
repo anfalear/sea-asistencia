@@ -159,13 +159,16 @@ async function editarEstudiante(id) {
 
   if (error || !data) { toast('No se pudo cargar el estudiante.', 'error'); return; }
 
-  document.getElementById('est-id').value         = data.id;
-  document.getElementById('est-codigo').value     = data.codigo_estudiante;
-  document.getElementById('est-nombre').value     = data.nombre_completo;
-  document.getElementById('est-grupo').value      = data.curso_grupo;
-  document.getElementById('est-tipo-curso').value = data.tipo_curso;
-  document.getElementById('est-profesor').value   = data.profesor_email;
-  document.getElementById('est-activo').checked   = data.activo;
+  document.getElementById('est-id').value           = data.id;
+  document.getElementById('est-codigo').value       = data.codigo_estudiante;
+  document.getElementById('est-nombre').value       = data.nombre_completo;
+  document.getElementById('est-grupo').value        = data.curso_grupo;
+  document.getElementById('est-tipo-curso').value   = data.tipo_curso;
+  document.getElementById('est-profesor').value     = data.profesor_email;
+  document.getElementById('est-email').value        = data.email              || '';
+  document.getElementById('est-dir-electron').value = data.direccion_electron || '';
+  document.getElementById('est-telefono').value     = data.telefono_reside    || '';
+  document.getElementById('est-activo').checked     = data.activo;
 
   openModal('Editar Estudiante');
 }
@@ -186,13 +189,16 @@ async function toggleActivoEstudiante(id, activo) {
 }
 
 async function guardarEstudiante() {
-  const id     = document.getElementById('est-id').value;
-  const codigo = document.getElementById('est-codigo').value.trim();
-  const nombre = document.getElementById('est-nombre').value.trim();
-  const grupo  = document.getElementById('est-grupo').value.trim();
-  const tipo   = document.getElementById('est-tipo-curso').value;
-  const prof   = document.getElementById('est-profesor').value.trim();
-  const activo = document.getElementById('est-activo').checked;
+  const id          = document.getElementById('est-id').value;
+  const codigo      = document.getElementById('est-codigo').value.trim();
+  const nombre      = document.getElementById('est-nombre').value.trim();
+  const grupo       = document.getElementById('est-grupo').value.trim();
+  const tipo        = document.getElementById('est-tipo-curso').value;
+  const prof        = document.getElementById('est-profesor').value.trim();
+  const email       = document.getElementById('est-email').value.trim() || null;
+  const dirElectron = document.getElementById('est-dir-electron').value.trim() || null;
+  const telefono    = document.getElementById('est-telefono').value.trim() || null;
+  const activo      = document.getElementById('est-activo').checked;
 
   if (!codigo || !nombre || !grupo || !tipo || !prof) {
     toast('Completa todos los campos obligatorios.', 'warning');
@@ -205,6 +211,9 @@ async function guardarEstudiante() {
     curso_grupo:       grupo.toUpperCase(),
     tipo_curso:        tipo,
     profesor_email:    prof.toLowerCase(),
+    email:             email,
+    direccion_electron: dirElectron,
+    telefono_reside:   telefono,
     activo,
   };
 
