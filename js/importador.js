@@ -28,12 +28,19 @@ function procesarArchivoSIAE(event) {
   reader.onload = (e) => {
     const wb   = XLSX.read(e.target.result, { type: 'array' });
     const ws   = wb.Sheets[wb.SheetNames[0]];
-    const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
+    const raw  = XLSX.utils.sheet_to_json(ws, { defval: '' });
 
-    if (!rows.length) {
+    if (!raw.length) {
       toast('El archivo está vacío o no tiene el formato esperado.', 'warning');
       return;
     }
+
+    // Normalizar cabeceras: minúsculas y espacios → guion bajo
+    const rows = raw.map(r => {
+      const n = {};
+      Object.keys(r).forEach(k => { n[k.trim().toLowerCase().replace(/\s+/g, '_')] = r[k]; });
+      return n;
+    });
 
     _importPreview = rows
       .map(r => {
