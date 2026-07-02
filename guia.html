@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Guía del profesor · SEA Matemáticas UIS</title>
+<meta name="description" content="Guía de uso de la plataforma SEA Matemáticas UIS para profesores." />
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%233a5bd9'/><text x='4' y='23' font-family='sans-serif' font-weight='800' font-size='14' fill='white'>SEA</text></svg>" />
+<style>
+  :root {
+    --paper: #f4f6fc;
+    --surface: #ffffff;
+    --ink: #1c2444;
+    --ink-soft: #5b6486;
+    --accent: #3a5bd9;
+    --accent-deep: #212f6e;
+    --accent-tint: #e8ecfa;
+    --allow: #146c43;
+    --allow-tint: #e3f3e9;
+    --restrict: #9a3412;
+    --restrict-tint: #fbeae0;
+    --rule: #dce1f2;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 40px 24px 96px;
+  }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent);
+    text-decoration: none;
+    margin-bottom: 24px;
+  }
+  .back-link:hover { text-decoration: underline; }
+
+  code, .kbd {
+    font-family: ui-monospace, "Cascadia Code", "SF Mono", Consolas, monospace;
+    font-size: 0.86em;
+  }
+
+  .kbd {
+    display: inline-block;
+    background: var(--accent-tint);
+    color: var(--accent-deep);
+    border: 1px solid var(--rule);
+    border-radius: 5px;
+    padding: 0.05em 0.5em;
+    white-space: nowrap;
+  }
+
+  h1, h2, h3 {
+    font-family: Georgia, "Iowan Old Style", "Palatino Linotype", serif;
+    font-weight: 700;
+    color: var(--accent-deep);
+    text-wrap: balance;
+    margin: 0;
+  }
+
+  /* ---------- Header ---------- */
+  header.masthead {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding-bottom: 28px;
+    border-bottom: 3px solid var(--accent);
+  }
+
+  .badge {
+    flex: none;
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
+    background: var(--accent);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: Georgia, serif;
+    font-weight: 800;
+    font-size: 20px;
+    letter-spacing: 0.02em;
+  }
+
+  .masthead-text .eyebrow {
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  .masthead-text h1 {
+    font-size: 30px;
+    margin-top: 2px;
+  }
+
+  .lede {
+    font-size: 18px;
+    line-height: 1.65;
+    color: var(--ink-soft);
+    margin: 26px 0 0;
+    max-width: 65ch;
+  }
+
+  /* ---------- Table of contents ---------- */
+  nav.toc {
+    margin: 36px 0 48px;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    padding: 18px 22px;
+  }
+
+  nav.toc .toc-label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  nav.toc ol {
+    margin: 0;
+    padding-left: 20px;
+    columns: 2;
+    column-gap: 28px;
+  }
+
+  nav.toc li { margin-bottom: 6px; break-inside: avoid; }
+
+  nav.toc a {
+    color: var(--ink);
+    text-decoration: none;
+    font-size: 15px;
+  }
+
+  nav.toc a:hover, nav.toc a:focus-visible { color: var(--accent); text-decoration: underline; }
+
+  /* ---------- Sections ---------- */
+  section { margin-top: 56px; scroll-margin-top: 24px; }
+
+  section > .section-head {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+
+  section > .section-head .num {
+    font-family: Georgia, serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  section h2 { font-size: 23px; }
+
+  section .section-intro {
+    color: var(--ink-soft);
+    max-width: 65ch;
+    margin-top: 12px;
+  }
+
+  p { max-width: 65ch; }
+  section > p { color: var(--ink); }
+
+  /* ---------- Screen cards (Qué encontrarás) ---------- */
+  .screen-list {
+    margin-top: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .screen-card {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-left: 4px solid var(--accent);
+    border-radius: 8px;
+    padding: 16px 20px;
+  }
+
+  .screen-card h3 {
+    font-size: 17px;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .screen-card .tag {
+    font-family: -apple-system, "Segoe UI", sans-serif;
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--accent-tint);
+    color: var(--accent-deep);
+  }
+
+  .screen-card p {
+    margin: 8px 0 0;
+    color: var(--ink-soft);
+    font-size: 15px;
+  }
+
+  /* ---------- Permission panel ---------- */
+  .permissions {
+    margin-top: 24px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  @media (max-width: 620px) {
+    .permissions { grid-template-columns: 1fr; }
+    nav.toc ol { columns: 1; }
+  }
+
+  .perm-col {
+    border-radius: 10px;
+    padding: 18px 20px 20px;
+    border: 1px solid var(--rule);
+  }
+
+  .perm-col.allow { background: var(--allow-tint); border-color: #c7e4d2; }
+  .perm-col.restrict { background: var(--restrict-tint); border-color: #f0d3bf; }
+
+  .perm-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 15px;
+    margin-bottom: 12px;
+  }
+
+  .perm-col.allow .perm-title { color: var(--allow); }
+  .perm-col.restrict .perm-title { color: var(--restrict); }
+
+  .chip {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: #fff;
+    flex: none;
+  }
+
+  .perm-col.allow .chip { background: var(--allow); }
+  .perm-col.restrict .chip { background: var(--restrict); }
+
+  .perm-col ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .perm-col li {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    font-size: 14.5px;
+  }
+
+  .perm-col li .chip { margin-top: 1px; }
+
+  /* ---------- Callout ---------- */
+  .callout {
+    margin-top: 24px;
+    background: var(--accent-tint);
+    border-radius: 10px;
+    padding: 20px 24px;
+    border: 1px solid #d3daf5;
+  }
+
+  .callout h3 {
+    font-size: 16px;
+    color: var(--accent-deep);
+    margin-bottom: 8px;
+  }
+
+  .callout ul {
+    margin: 8px 0 0;
+    padding-left: 20px;
+    color: var(--ink);
+  }
+
+  .callout li { margin-bottom: 6px; font-size: 15px; }
+
+  .callout.note {
+    margin-top: 14px;
+    background: var(--surface);
+    border: 1px dashed var(--rule);
+  }
+
+  .callout.note p { margin: 0; font-size: 14.5px; color: var(--ink-soft); max-width: none; }
+
+  /* ---------- Footer / contact ---------- */
+  .contact {
+    margin-top: 56px;
+    padding-top: 28px;
+    border-top: 1px solid var(--rule);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .contact p { margin: 0; color: var(--ink-soft); font-size: 14.5px; }
+  .contact a { color: var(--accent); font-weight: 600; text-decoration: none; }
+  .contact a:hover { text-decoration: underline; }
+
+  a { color: var(--accent); }
+
+  ::selection { background: var(--accent-tint); }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <a class="back-link" href="index.html">← Volver a la plataforma</a>
+
+  <header class="masthead">
+    <div class="badge">SEA</div>
+    <div class="masthead-text">
+      <span class="eyebrow">Sistema de Asistencia · Matemáticas UIS</span>
+      <h1>Guía del profesor</h1>
+    </div>
+  </header>
+
+  <p class="lede">
+    Estimado profesor, estimada profesora: esta guía explica qué encontrará en la
+    plataforma, cómo registrar y consultar la información de sus grupos, y qué
+    puede o no hacer dentro del sistema. Le recomendamos leerla antes de su
+    primer registro de asistencia; después le servirá como referencia rápida.
+  </p>
+
+  <nav class="toc" aria-label="Contenido">
+    <span class="toc-label">Contenido</span>
+    <ol>
+      <li><a href="#que-es">1. Qué es esta plataforma</a></li>
+      <li><a href="#ingresar">2. Cómo ingresar</a></li>
+      <li><a href="#encontraras">3. Qué encontrarás</a></li>
+      <li><a href="#permisos">4. Qué puedes y no puedes hacer</a></li>
+      <li><a href="#datos">5. Manejo responsable de la información</a></li>
+      <li><a href="#dudas">6. Dudas o problemas</a></li>
+    </ol>
+  </nav>
+
+  <section id="que-es">
+    <div class="section-head"><span class="num">1</span><h2>Qué es esta plataforma</h2></div>
+    <p class="section-intro">
+      Es el sistema mediante el cual el programa SEA Matemáticas (UIS) centraliza la
+      asistencia, el desempeño en talleres y los informes de cierre de periodo de los
+      estudiantes de Precálculo y Refuerzo SEA. Reemplaza las planillas sueltas: cada
+      grupo que el profesor dicta queda registrado a su nombre, y únicamente él o ella
+      (y el administrador) pueden consultarlo.
+    </p>
+  </section>
+
+  <section id="ingresar">
+    <div class="section-head"><span class="num">2</span><h2>Cómo ingresar</h2></div>
+    <p class="section-intro">
+      La plataforma se encuentra disponible en
+      <a href="https://anfalear.github.io/sea-asistencia/">anfalear.github.io/sea-asistencia</a>.
+      El ingreso se hace con <span class="kbd">Continuar con Google</span>, utilizando
+      el correo Gmail registrado ante el administrador. No hay usuario ni contraseña
+      independientes: si el correo no está autorizado, el sistema cierra la sesión
+      automáticamente y muestra un aviso; en ese caso, se debe contactar al
+      administrador para que incluya el correo en la lista autorizada.
+    </p>
+    <div class="callout note">
+      <p><strong>Nota:</strong> al hacer clic en <span class="kbd">Continuar con Google</span>,
+        es posible que aparezca una pantalla de Google solicitando permiso para que la
+        plataforma acceda a su nombre y correo. Esto es normal y es Google —no la
+        plataforma— quien la muestra: es la forma en que se confirma la identidad de
+        quien ingresa. La plataforma no accede a la contraseña ni a ninguna otra
+        información de la cuenta de Google.</p>
+    </div>
+  </section>
+
+  <section id="encontraras">
+    <div class="section-head"><span class="num">3</span><h2>Qué encontrarás</h2></div>
+    <p class="section-intro">
+      El menú lateral cuenta con seis secciones. A continuación se describe la
+      función de cada una:
+    </p>
+
+    <div class="screen-list">
+      <div class="screen-card">
+        <h3>Dashboard <span class="tag">solo lectura</span></h3>
+        <p>Panorama general: estudiantes activos, sesiones del día, alertas de los
+          últimos 30 días y actividad reciente. No cuenta con botones de acción;
+          su propósito es únicamente orientar al ingresar.</p>
+      </div>
+      <div class="screen-card">
+        <h3>Registro de Asistencia</h3>
+        <p>Es la pantalla de trabajo diaria. Se eligen la fecha y el grupo, se
+          carga la lista de estudiantes y se marca <span class="kbd">✓ Asistió</span> /
+          <span class="kbd">✕ No asistió</span> para cada uno. Allí mismo se
+          califica el taller trabajado (comunicación, procedimientos,
+          representación, razonamiento, de 1 a 5), se activa una alerta individual
+          en caso de ser necesario, y se registran las observaciones de la sesión.
+          <span class="kbd">Guardar Asistencia</span> guarda todo lo anterior de una sola vez.</p>
+      </div>
+      <div class="screen-card">
+        <h3>Historial</h3>
+        <p>Permite consultar registros pasados por rango de fechas y grupo, y
+          descargar un archivo Excel con cuatro hojas: asistencia, puntajes de
+          taller, bitácora de observaciones e informes.</p>
+      </div>
+      <div class="screen-card">
+        <h3>Estudiantes</h3>
+        <p>Contiene la ficha de cada estudiante de sus grupos: código, nombre,
+          programa académico, ciudad de procedencia y fecha de nacimiento. Estos
+          datos pueden editarse, y con <span class="kbd">📊 Ver</span> se
+          consultan las estadísticas de asistencia del estudiante.</p>
+      </div>
+      <div class="screen-card">
+        <h3>Informes</h3>
+        <p>Permite elaborar el informe de cierre por estudiante y periodo (por
+          ejemplo <span class="kbd">2026-1</span>): se elige el grupo, luego el
+          estudiante, y se redacta su desempeño general. Si ya existe un informe
+          para ese periodo, el sistema lo advierte antes de reemplazarlo.</p>
+      </div>
+      <div class="screen-card">
+        <h3>Alertas</h3>
+        <p>Reúne, en dos pestañas, a los estudiantes marcados con alerta de
+          <span class="kbd">⚠ Didáctica</span> o <span class="kbd">♡ Psicología</span>
+          desde el Registro de Asistencia.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="permisos">
+    <div class="section-head"><span class="num">4</span><h2>Qué puedes y no puedes hacer</h2></div>
+    <p class="section-intro">
+      Cada cuenta docente tiene rol <strong>Profesor</strong>. El sistema limita lo
+      que puede consultarse y modificarse según ese rol — no por una cuestión de
+      confianza, sino porque cada grupo pertenece a un correo distinto.
+    </p>
+
+    <div class="permissions">
+      <div class="perm-col allow">
+        <div class="perm-title"><span class="chip">✓</span> Está permitido</div>
+        <ul>
+          <li><span class="chip">✓</span> Ver y registrar la asistencia de los grupos asignados a su correo.</li>
+          <li><span class="chip">✓</span> Calificar talleres, activar alertas y registrar observaciones de sus estudiantes.</li>
+          <li><span class="chip">✓</span> Editar la ficha de sus estudiantes y desactivarlos o reactivarlos.</li>
+          <li><span class="chip">✓</span> Crear y actualizar los informes de cierre de sus estudiantes.</li>
+          <li><span class="chip">✓</span> Descargar el historial de sus grupos en Excel.</li>
+        </ul>
+      </div>
+      <div class="perm-col restrict">
+        <div class="perm-title"><span class="chip">✕</span> No está permitido</div>
+        <ul>
+          <li><span class="chip">✕</span> Ver estudiantes, asistencias o informes de otros profesores.</li>
+          <li><span class="chip">✕</span> Crear estudiantes nuevos ni importar listas desde Excel — función exclusiva del administrador.</li>
+          <li><span class="chip">✕</span> Eliminar estudiantes, registros de asistencia o informes — función exclusiva del administrador.</li>
+          <li><span class="chip">✕</span> Editar o eliminar los registros de un grupo distinto al propio, aun conociendo al estudiante.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="datos">
+    <div class="section-head"><span class="num">5</span><h2>Manejo responsable de la información</h2></div>
+    <p class="section-intro">
+      El uso de la plataforma implica el manejo de datos personales y, en algunos
+      casos, información sensible de los estudiantes. Se solicita tener en cuenta
+      las siguientes pautas:
+    </p>
+    <div class="callout">
+      <h3>Antes de registrar o compartir información</h3>
+      <ul>
+        <li>Las alertas de <strong>Psicología</strong> y las observaciones de sesión
+          son de carácter confidencial: deben utilizarse únicamente para activar el
+          acompañamiento correspondiente, y no comentarse fuera de ese propósito.</li>
+        <li>Se solicita no tomar capturas de pantalla ni compartir el Excel del
+          historial fuera de los canales oficiales del programa.</li>
+        <li>Se recomienda cerrar sesión (<span class="kbd">↩ Cerrar sesión</span>)
+          al utilizar un computador compartido o de acceso público.</li>
+        <li>Las observaciones e informes deben redactarse considerando que el
+          propio estudiante o su acudiente podría llegar a leerlos: es preferible
+          describir hechos y evitar juicios de valor.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="dudas">
+    <div class="section-head"><span class="num">6</span><h2>Dudas o problemas</h2></div>
+    <p class="section-intro">
+      Dentro de la plataforma, el botón <span class="kbd">? Instructivo</span>,
+      ubicado en la parte superior, repite la función de cada botón, pantalla por
+      pantalla. Para cualquier otra inquietud —correo no autorizado, un grupo que
+      no aparece, un dato que no coincide— se agradece escribir al administrador.
+    </p>
+  </section>
+
+  <div class="contact">
+    <p>SEA Matemáticas · Universidad Industrial de Santander</p>
+    <a href="mailto:aflaok10@gmail.com">aflaok10@gmail.com</a>
+  </div>
+
+</div>
+</body>
+</html>
