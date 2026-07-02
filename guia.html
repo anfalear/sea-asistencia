@@ -325,6 +325,32 @@
 
   .callout.note p { margin: 0; font-size: 14.5px; color: var(--ink-soft); max-width: none; }
 
+  .callout.highlight {
+    margin: 18px 0 0;
+    background: var(--accent-deep);
+    border: none;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+
+  .callout.highlight .icon {
+    flex: none;
+    font-size: 22px;
+    line-height: 1;
+  }
+
+  .callout.highlight h3 { color: #fff; }
+
+  .callout.highlight p {
+    margin: 6px 0 0;
+    color: #dbe2f8;
+    font-size: 15px;
+    max-width: none;
+  }
+
+  .callout.highlight strong { color: #fff; }
+
   /* ---------- Footer / contact ---------- */
   .contact {
     margin-top: 56px;
@@ -440,6 +466,17 @@
         <p>Permite consultar registros pasados por rango de fechas y grupo, y
           descargar un archivo Excel con cuatro hojas: asistencia, puntajes de
           taller, bitácora de observaciones e informes.</p>
+        <div class="callout highlight">
+          <span class="icon">📥</span>
+          <div>
+            <h3>Toda su información queda respaldada en un clic</h3>
+            <p>El botón <span class="kbd" style="background:#ffffff26;color:#fff;border-color:transparent">↓ Descargar Excel</span>,
+              en <strong>Historial</strong>, exporta <strong>toda la información que usted
+              haya consignado en la plataforma</strong> para sus grupos: asistencia,
+              puntajes de taller, observaciones de cada sesión e informes de cierre.
+              Se recomienda descargarlo periódicamente y conservar una copia propia.</p>
+          </div>
+        </div>
       </div>
       <div class="screen-card">
         <h3>Estudiantes</h3>
