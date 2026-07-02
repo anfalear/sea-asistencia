@@ -558,7 +558,7 @@
   <div class="modal-overlay" onclick="document.getElementById('modal-instructivo').classList.add('hidden')"></div>
   <div class="modal-container" style="max-width:600px">
     <div class="modal-header">
-      <h3>Instructivo · Registro de Asistencia</h3>
+      <h3>Instructivo · Función de cada botón</h3>
       <button class="modal-close" id="btn-instructivo-close" aria-label="Cerrar">✕</button>
     </div>
     <div class="modal-body">
@@ -566,43 +566,73 @@
         <li>
           <div>
             <strong>Iniciar sesión</strong>
-            <p>Haz clic en "Continuar con Google" y accede con tu cuenta institucional. Solo cuentas autorizadas por el administrador pueden ingresar.</p>
+            <p><em>Continuar con Google</em> — accede con tu cuenta institucional. Solo cuentas autorizadas por el administrador pueden ingresar.</p>
           </div>
         </li>
         <li>
           <div>
-            <strong>Revisar el Dashboard</strong>
-            <p>Al ingresar verás el panel de control con los contadores generales: estudiantes activos, sesiones del día, alertas en los últimos 30 días y sesiones de la semana.</p>
+            <strong>Menú lateral y topbar</strong>
+            <p><em>☰</em> abre el menú en celular/tablet; <em>✕</em> lo cierra. Los enlaces <em>Dashboard, Registro Asistencia, Historial, Estudiantes, Informes, Alertas</em> navegan entre vistas. <em>? Instructivo</em> abre esta ayuda. <em>↩ Cerrar sesión</em> (abajo del menú) cierra tu sesión actual.</p>
           </div>
         </li>
         <li>
           <div>
-            <strong>Ir a Registro de Asistencia</strong>
-            <p>En el menú lateral selecciona <em>Registro Asistencia</em>. Escoge la fecha de la sesión y el grupo en los selectores, luego pulsa <em>Cargar grupo</em>.</p>
+            <strong>Dashboard</strong>
+            <p>Vista de solo lectura: contadores de estudiantes activos, sesiones del día, alertas (30 días) y sesiones de la semana, más actividad y alertas recientes. No tiene botones de acción.</p>
           </div>
         </li>
         <li>
           <div>
-            <strong>Marcar presencia por estudiante</strong>
-            <p>Usa el botón <strong>✓ Asistió</strong> para los que asistieron y <strong>✕ No asistió</strong> para los ausentes. Los estudiantes sin marcar se guardarán como <strong>ausentes</strong> al guardar. El contador se actualiza en tiempo real.</p>
+            <strong>Registro de Asistencia — cargar el grupo</strong>
+            <p>Elige fecha y grupo, luego <em>Cargar grupo</em> trae la lista de estudiantes (o el registro ya guardado de ese día, si existe). El campo <em>Taller</em> de la cabecera es solo un valor sugerido para pre-llenar las tarjetas; no se guarda por sí mismo.</p>
           </div>
         </li>
         <li>
           <div>
-            <strong>Reportar alertas por estudiante</strong>
-            <p>Debajo del nombre de cada estudiante verás los botones <em>⚠ Didáctica</em> y <em>♡ Psicología</em>. Actívalos si ese estudiante en particular requiere seguimiento académico o psicológico. Al activar una alerta aparece un campo de observación individual.</p>
+            <strong>Registro de Asistencia — ordenar</strong>
+            <p>Los botones <em>Nombre</em> / <em>Código</em> (junto a "Ordenar") reordenan las tarjetas sin perder lo que ya escribiste en ellas.</p>
           </div>
         </li>
         <li>
           <div>
-            <strong>Guardar la asistencia</strong>
-            <p>Haz clic en <em>Guardar Asistencia</em> al finalizar. Si ya existe un registro para ese día y grupo, se actualizará automáticamente. Las alertas y observaciones quedan asociadas a cada estudiante.</p>
+            <strong>Registro de Asistencia — cada tarjeta de estudiante</strong>
+            <p><strong>✓ Asistió</strong> / <strong>✕ No asistió</strong> marcan la presencia (sin marcar = ausente al guardar). <em>⚠ Didáctica</em> y <em>♡ Psicología</em> activan una alerta individual para ese estudiante. Los campos <em>Taller</em>, <em>Comunicación</em>, <em>Procedimientos</em>, <em>Representación</em> y <em>Razonamiento</em> (1-5) registran el número de taller trabajado y su desempeño en esa sesión; son opcionales. El campo de texto inferior guarda fortalezas, dificultades y observaciones del estudiante en esa sesión.</p>
           </div>
         </li>
         <li>
           <div>
-            <strong>Consultar historial y descargar reporte</strong>
-            <p>Ve a <em>Historial</em>, filtra por rango de fechas y grupo, y haz clic en <em>↓ Descargar Excel</em> para obtener el reporte completo en formato .xlsx con asistencia por estudiante.</p>
+            <strong>Registro de Asistencia — guardar</strong>
+            <p><em>Guardar Asistencia</em> crea o actualiza el registro del día para ese grupo, junto con la presencia, alertas, taller, puntajes y observación de cada estudiante.</p>
+          </div>
+        </li>
+        <li>
+          <div>
+            <strong>Historial</strong>
+            <p><em>Buscar</em> filtra los registros por rango de fechas y grupo. <em>↓ Descargar Excel</em> genera un .xlsx con 4 hojas: Asistencia, Puntajes, Bitácora (observaciones) e Informes.</p>
+          </div>
+        </li>
+        <li>
+          <div>
+            <strong>Estudiantes</strong>
+            <p><em>Buscar</em> filtra por tipo de curso, grupo, nombre o código. <em>+ Nuevo estudiante</em> abre el formulario en blanco; <em>↑ Importar desde Excel</em> abre el importador SIAE (solo administrador). Por cada fila: <em>📊 Ver</em> muestra las estadísticas de asistencia del estudiante; <em>Editar</em> abre su ficha completa (incluye programa académico, ciudad de procedencia y fecha de nacimiento); <em>Desactivar/Activar</em> alterna si aparece en los selectores de grupo activos.</p>
+          </div>
+        </li>
+        <li>
+          <div>
+            <strong>Modal de estudiante (nuevo/editar)</strong>
+            <p><em>Guardar</em> valida los campos obligatorios (código, nombre, grupo, tipo de curso, profesor) y crea o actualiza al estudiante; el resto de campos son opcionales. <em>Cancelar</em> o <em>✕</em> cierran sin guardar.</p>
+          </div>
+        </li>
+        <li>
+          <div>
+            <strong>Informes de estudiante</strong>
+            <p>Elige <em>Grupo</em> y luego <em>Estudiante</em> (se habilita al elegir grupo), escribe el <em>Periodo</em> (ej. "2026-1") y redacta el <em>Desempeño general</em>. <em>Guardar Informe</em> crea o actualiza el informe de ese estudiante en ese periodo; si ya existía uno, se muestra un aviso antes de sobrescribirlo.</p>
+          </div>
+        </li>
+        <li>
+          <div>
+            <strong>Alertas</strong>
+            <p>Las pestañas <em>⚠ Didáctica del Cálculo</em> y <em>♡ Psicología</em> alternan entre los grupos/estudiantes marcados con cada tipo de alerta.</p>
           </div>
         </li>
       </ol>
