@@ -116,6 +116,7 @@ async function ejecutarImportacion() {
     email:              r.email              || null,
     direccion_electron: r.direccion_electron || null,
     telefono_reside:    r.telefono_reside    || null,
+    programa_academico: r.programa           || null,
     activo:             true,
   }));
 

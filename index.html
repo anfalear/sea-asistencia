@@ -72,6 +72,10 @@
         <span class="nav-icon">◉</span>
         <span>Estudiantes</span>
       </a>
+      <a href="#" class="nav-item" data-view="informes">
+        <span class="nav-icon">▤</span>
+        <span>Informes</span>
+      </a>
       <a href="#" class="nav-item" data-view="alertas">
         <span class="nav-icon">⚠</span>
         <span>Alertas</span>
@@ -225,6 +229,12 @@
               </div>
             </div>
             <div class="card-body">
+              <div class="form-row" style="margin-bottom:12px;align-items:flex-end">
+                <div class="form-group" style="flex:0 0 auto;max-width:340px">
+                  <label for="reg-num-taller">Taller <span style="font-size:11.5px;color:var(--text-muted);font-weight:400">(valor sugerido para el grupo · editable por estudiante abajo)</span></label>
+                  <input type="number" id="reg-num-taller" min="1" max="99" placeholder="Nº taller" style="width:108px" />
+                </div>
+              </div>
               <div class="registro-toolbar">
                 <p style="font-size:12.5px;color:var(--text-muted);margin:0">
                   Usa <strong>✓ Asistió</strong> / <strong>✕ No asistió</strong> en cada tarjeta.
@@ -356,6 +366,56 @@
       </section>
 
       <!-- ================================================
+           VISTA: Informes de estudiante
+           ================================================ -->
+      <section id="view-informes" class="view hidden">
+
+        <div class="view-header">
+          <div>
+            <h2>Informes de Estudiante</h2>
+            <p class="view-subtitle">Desempeño general del estudiante por periodo</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-body">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="inf-grupo">Grupo</label>
+                <select id="inf-grupo">
+                  <option value="">Seleccionar grupo...</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="inf-estudiante">Estudiante</label>
+                <select id="inf-estudiante" disabled>
+                  <option value="">Selecciona un grupo primero...</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="inf-periodo">Periodo</label>
+                <input type="text" id="inf-periodo" placeholder="Ej: 2026-1" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mt-4">
+          <div class="card-body">
+            <div id="inf-existente-msg" class="hidden" style="margin-bottom:12px"></div>
+            <div class="form-group">
+              <label for="inf-desempeno">Desempeño general</label>
+              <textarea id="inf-desempeno" rows="8" placeholder="Describe el desempeño general del estudiante en el periodo..."></textarea>
+            </div>
+            <div class="form-actions">
+              <button class="btn btn-success" id="btn-guardar-informe">Guardar Informe</button>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ================================================
            VISTA: Alertas
            ================================================ -->
       <section id="view-alertas" class="view hidden">
@@ -459,7 +519,21 @@
             <label for="est-telefono">Teléfono</label>
             <input type="text" id="est-telefono" placeholder="3001234567" />
           </div>
-          <div class="form-group"></div>
+          <div class="form-group">
+            <label for="est-fecha-nacimiento">Fecha de nacimiento</label>
+            <input type="date" id="est-fecha-nacimiento" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="est-programa-academico">Programa académico</label>
+            <input type="text" id="est-programa-academico" placeholder="Ej: Ingeniería de Sistemas" />
+          </div>
+          <div class="form-group">
+            <label for="est-ciudad-procedencia">Ciudad de procedencia</label>
+            <input type="text" id="est-ciudad-procedencia" placeholder="Ej: Bucaramanga" />
+          </div>
         </div>
 
         <div class="form-group">
@@ -672,16 +746,17 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="js/config.js?v=3"></script>
-<script src="js/ui.js?v=4"></script>
+<script src="js/ui.js?v=5"></script>
 <script src="js/auth.js?v=4"></script>
 <script src="js/dashboard.js?v=4"></script>
-<script src="js/registro.js?v=4"></script>
+<script src="js/registro.js?v=5"></script>
 <script src="js/historial.js?v=4"></script>
-<script src="js/estudiantes.js?v=4"></script>
+<script src="js/estudiantes.js?v=5"></script>
 <script src="js/alertas.js?v=4"></script>
-<script src="js/export.js?v=4"></script>
+<script src="js/export.js?v=5"></script>
 <script src="js/estadisticas.js?v=4"></script>
-<script src="js/importador.js?v=4"></script>
+<script src="js/importador.js?v=5"></script>
+<script src="js/informe_estudiante.js?v=5"></script>
 <script src="js/main.js?v=4"></script>
 
 </body>

@@ -88,12 +88,22 @@ async function cargarGrupo() {
   // Verificar registro existente
   const { data: existing } = await db
     .from('asistencias')
-    .select('*, detalle_asistencias(estudiante_id, presente, alerta_precalculo, alerta_psicologia, observacion)')
+    .select(`*, detalle_asistencias(
+      estudiante_id, presente, alerta_precalculo, alerta_psicologia, observacion,
+      numero_taller, comunicacion, procedimientos, representacion, razonamiento
+    )`)
     .eq('fecha', fecha)
     .eq('curso_grupo', grupo)
     .maybeSingle();
 
   asistenciaExistente = existing;
+
+  const tallerExistente = existing?.detalle_asistencias
+    ?.find(d => d.numero_taller !== null && d.numero_taller !== undefined)
+    ?.numero_taller;
+  if (tallerExistente !== undefined) {
+    document.getElementById('reg-num-taller').value = tallerExistente;
+  }
 
   renderStudentList(ests, existing);
   mostrarFormRegistro(grupo, ests[0].tipo_curso, existing);
@@ -134,6 +144,13 @@ function renderStudentList(estudiantes, existing) {
     const psiActive = d?.alerta_psicologia ? ' active' : '';
     const obsValue  = d?.observacion ? escapeHtml(d.observacion) : '';
 
+    const tallerSugerido = document.getElementById('reg-num-taller')?.value || '';
+    const tallerValue = (d?.numero_taller !== null && d?.numero_taller !== undefined)
+      ? d.numero_taller
+      : tallerSugerido;
+
+    const puntaje = (campo) => (d?.[campo] !== null && d?.[campo] !== undefined) ? d[campo] : '';
+
     return `
       <div class="student-item ${estadoClass}" data-id="${est.id}">
         <div class="student-header">
@@ -161,8 +178,31 @@ function renderStudentList(estudiantes, existing) {
               ♡ Psicología
             </button>
           </div>
+          <div class="student-puntajes">
+            <label class="student-puntaje-label">
+              Taller
+              <input type="number" class="est-taller" min="1" max="99" value="${tallerValue}">
+            </label>
+            <label class="student-puntaje-label">
+              Comunicación
+              <input type="number" class="est-comunicacion" min="1" max="5" value="${puntaje('comunicacion')}">
+            </label>
+            <label class="student-puntaje-label">
+              Procedimientos
+              <input type="number" class="est-procedimientos" min="1" max="5" value="${puntaje('procedimientos')}">
+            </label>
+            <label class="student-puntaje-label">
+              Representación
+              <input type="number" class="est-representacion" min="1" max="5" value="${puntaje('representacion')}">
+            </label>
+            <label class="student-puntaje-label">
+              Razonamiento
+              <input type="number" class="est-razonamiento" min="1" max="5" value="${puntaje('razonamiento')}">
+            </label>
+          </div>
+          <label class="est-obs-label">Fortalezas, dificultades y observaciones del estudiante en esta sesión</label>
           <input type="text" class="est-obs"
-                 placeholder="Observación del estudiante..."
+                 placeholder="Fortalezas, dificultades y observaciones..."
                  value="${obsValue}">
         </div>
       </div>
@@ -206,6 +246,11 @@ function actualizarContadores() {
 
 // ---- Ordenar tarjetas ----
 
+function leerPuntajeInt(item, selector) {
+  const raw = item.querySelector(selector)?.value;
+  return raw ? parseInt(raw, 10) : null;
+}
+
 function captureCurrentState() {
   const detalle = [];
   document.querySelectorAll('.student-item').forEach(it => {
@@ -217,6 +262,11 @@ function captureCurrentState() {
       alerta_precalculo: it.querySelector('[data-tipo="precalculo"]')?.classList.contains('active') || false,
       alerta_psicologia: it.querySelector('[data-tipo="psicologia"]')?.classList.contains('active') || false,
       observacion:       it.querySelector('.est-obs')?.value.trim() || null,
+      numero_taller:     leerPuntajeInt(it, '.est-taller'),
+      comunicacion:      leerPuntajeInt(it, '.est-comunicacion'),
+      procedimientos:    leerPuntajeInt(it, '.est-procedimientos'),
+      representacion:    leerPuntajeInt(it, '.est-representacion'),
+      razonamiento:      leerPuntajeInt(it, '.est-razonamiento'),
     });
   });
   return { detalle_asistencias: detalle };
@@ -283,6 +333,11 @@ async function guardarAsistencia() {
       alerta_precalculo: alertaPre,
       alerta_psicologia: alertaPsi,
       observacion:       obs,
+      numero_taller:     leerPuntajeInt(it, '.est-taller'),
+      comunicacion:      leerPuntajeInt(it, '.est-comunicacion'),
+      procedimientos:    leerPuntajeInt(it, '.est-procedimientos'),
+      representacion:    leerPuntajeInt(it, '.est-representacion'),
+      razonamiento:      leerPuntajeInt(it, '.est-razonamiento'),
     });
   });
 
@@ -342,6 +397,11 @@ async function guardarAsistencia() {
     alerta_precalculo: d.alerta_precalculo,
     alerta_psicologia: d.alerta_psicologia,
     observacion:       d.observacion,
+    numero_taller:     d.numero_taller,
+    comunicacion:      d.comunicacion,
+    procedimientos:    d.procedimientos,
+    representacion:    d.representacion,
+    razonamiento:      d.razonamiento,
   }));
 
   const obsGuardadas = detallePayload.filter(d => d.observacion).length;

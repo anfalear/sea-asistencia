@@ -22,6 +22,7 @@ async function exportarAsistencias() {
       fecha, curso_grupo, tipo_curso, presentes, ausentes, profesor_email,
       detalle_asistencias(
         presente, alerta_precalculo, alerta_psicologia, observacion,
+        numero_taller, comunicacion, procedimientos, representacion, razonamiento,
         estudiantes(codigo_estudiante, nombre_completo, email, direccion_electron, telefono_reside)
       )
     `)
@@ -34,11 +35,23 @@ async function exportarAsistencias() {
 
   const { data, error } = await query;
 
+  let informesQuery = db
+    .from('informes_estudiante')
+    .select(`periodo, desempeno_general, estudiantes${grupo ? '!inner' : ''}(codigo_estudiante, nombre_completo, curso_grupo)`);
+
+  if (grupo) informesQuery = informesQuery.eq('estudiantes.curso_grupo', grupo);
+
+  const { data: informesData, error: informesError } = await informesQuery;
+
   btn.disabled = false;
   btn.textContent = '↓ Descargar Excel';
 
   if (error) {
     toast('Error al obtener datos: ' + error.message, 'error');
+    return;
+  }
+  if (informesError) {
+    toast('Error al obtener informes: ' + informesError.message, 'error');
     return;
   }
 
@@ -47,18 +60,23 @@ async function exportarAsistencias() {
     return;
   }
 
-  const rows = [];
+  const filasAsistencia = [];
+  const filasPuntajes   = [];
+  const filasBitacora   = [];
+
   data.forEach(sesion => {
     const detalles = sesion.detalle_asistencias || [];
     if (detalles.length) {
       detalles.forEach(d => {
-        rows.push({
+        const nombreEst = d.estudiantes?.nombre_completo || '';
+
+        filasAsistencia.push({
           'Fecha':             sesion.fecha,
           'Grupo':             sesion.curso_grupo,
           'Tipo Curso':        sesion.tipo_curso,
           'Profesor':          sesion.profesor_email,
           'Cód. Estudiante':   d.estudiantes?.codigo_estudiante  || '',
-          'Nombre Estudiante': d.estudiantes?.nombre_completo    || '',
+          'Nombre Estudiante': nombreEst,
           'Email':             d.estudiantes?.email              || '',
           'Dir. Electrónica':  d.estudiantes?.direccion_electron || '',
           'Teléfono':          d.estudiantes?.telefono_reside    || '',
@@ -67,9 +85,26 @@ async function exportarAsistencias() {
           'Alerta Psicología': d.alerta_psicologia ? 'Sí' : 'No',
           'Observación':       d.observacion || '',
         });
+
+        filasPuntajes.push({
+          'Estudiante':      nombreEst,
+          'Fecha':           sesion.fecha,
+          'Nº Taller':       d.numero_taller  ?? '',
+          'Comunicación':    d.comunicacion   ?? '',
+          'Procedimientos':  d.procedimientos ?? '',
+          'Representación':  d.representacion ?? '',
+          'Razonamiento':    d.razonamiento   ?? '',
+        });
+
+        filasBitacora.push({
+          'Estudiante': nombreEst,
+          'Fecha':      sesion.fecha,
+          'Nº Taller':  d.numero_taller ?? '',
+          'Observación': d.observacion || '',
+        });
       });
     } else {
-      rows.push({
+      filasAsistencia.push({
         'Fecha':             sesion.fecha,
         'Grupo':             sesion.curso_grupo,
         'Tipo Curso':        sesion.tipo_curso,
@@ -84,17 +119,41 @@ async function exportarAsistencias() {
     }
   });
 
-  const ws = XLSX.utils.json_to_sheet(rows);
+  const filasInformes = (informesData || []).map(inf => ({
+    'Estudiante':        inf.estudiantes?.nombre_completo || '',
+    'Cód. Estudiante':   inf.estudiantes?.codigo_estudiante || '',
+    'Periodo':           inf.periodo,
+    'Desempeño General': inf.desempeno_general || '',
+  }));
 
-  // Anchos de columna aproximados
-  ws['!cols'] = [
+  const wsAsistencia = XLSX.utils.json_to_sheet(filasAsistencia);
+  wsAsistencia['!cols'] = [
     { wch: 12 }, { wch: 12 }, { wch: 22 }, { wch: 28 },
     { wch: 14 }, { wch: 32 }, { wch: 30 }, { wch: 30 }, { wch: 16 },
     { wch: 10 }, { wch: 18 }, { wch: 18 }, { wch: 36 },
   ];
 
+  const wsPuntajes = XLSX.utils.json_to_sheet(filasPuntajes);
+  wsPuntajes['!cols'] = [
+    { wch: 32 }, { wch: 12 }, { wch: 10 },
+    { wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 14 },
+  ];
+
+  const wsBitacora = XLSX.utils.json_to_sheet(filasBitacora);
+  wsBitacora['!cols'] = [
+    { wch: 32 }, { wch: 12 }, { wch: 10 }, { wch: 50 },
+  ];
+
+  const wsInformes = XLSX.utils.json_to_sheet(filasInformes);
+  wsInformes['!cols'] = [
+    { wch: 32 }, { wch: 14 }, { wch: 12 }, { wch: 60 },
+  ];
+
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Asistencias');
+  XLSX.utils.book_append_sheet(wb, wsAsistencia, 'Asistencia');
+  XLSX.utils.book_append_sheet(wb, wsPuntajes, 'Puntajes');
+  XLSX.utils.book_append_sheet(wb, wsBitacora, 'Bitácora');
+  XLSX.utils.book_append_sheet(wb, wsInformes, 'Informes');
 
   const filename = `asistencias_${fechaIni}_${fechaFin}.xlsx`;
   XLSX.writeFile(wb, filename);

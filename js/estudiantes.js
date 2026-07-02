@@ -168,6 +168,9 @@ async function editarEstudiante(id) {
   document.getElementById('est-email').value        = data.email              || '';
   document.getElementById('est-dir-electron').value = data.direccion_electron || '';
   document.getElementById('est-telefono').value     = data.telefono_reside    || '';
+  document.getElementById('est-programa-academico').value = data.programa_academico  || '';
+  document.getElementById('est-ciudad-procedencia').value = data.ciudad_procedencia  || '';
+  document.getElementById('est-fecha-nacimiento').value   = data.fecha_nacimiento    || '';
   document.getElementById('est-activo').checked     = data.activo;
 
   openModal('Editar Estudiante');
@@ -198,6 +201,9 @@ async function guardarEstudiante() {
   const email       = document.getElementById('est-email').value.trim() || null;
   const dirElectron = document.getElementById('est-dir-electron').value.trim() || null;
   const telefono    = document.getElementById('est-telefono').value.trim() || null;
+  const programaAcademico  = document.getElementById('est-programa-academico').value.trim() || null;
+  const ciudadProcedencia  = document.getElementById('est-ciudad-procedencia').value.trim() || null;
+  const fechaNacimiento    = document.getElementById('est-fecha-nacimiento').value || null;
   const activo      = document.getElementById('est-activo').checked;
 
   if (!codigo || !nombre || !grupo || !tipo || !prof) {
@@ -214,6 +220,9 @@ async function guardarEstudiante() {
     email:             email,
     direccion_electron: dirElectron,
     telefono_reside:   telefono,
+    programa_academico: programaAcademico,
+    ciudad_procedencia: ciudadProcedencia,
+    fecha_nacimiento:   fechaNacimiento,
     activo,
   };
 

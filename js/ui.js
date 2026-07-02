@@ -7,6 +7,7 @@ const VIEW_TITLES = {
   registro:    'Registro de Asistencia',
   historial:   'Historial',
   estudiantes: 'Estudiantes',
+  informes:    'Informes',
   alertas:     'Alertas',
 };
 
@@ -38,6 +39,7 @@ function navigateTo(view) {
     case 'registro':    initRegistro();    break;
     case 'historial':   initHistorial();   break;
     case 'estudiantes': initEstudiantes(); break;
+    case 'informes':    initInformes();    break;
     case 'alertas':     loadAlertas();     break;
   }
 }
