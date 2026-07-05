@@ -496,7 +496,7 @@
         <div class="form-row">
           <div class="form-group">
             <label for="est-grupo">Grupo *</label>
-            <input type="text" id="est-grupo" placeholder="Ej: MAT-A1" required />
+            <input type="text" id="est-grupo" placeholder="Ej: MAT-A1" list="grupos-datalist" required />
           </div>
           <div class="form-group">
             <label for="est-profesor">Email del profesor *</label>
@@ -720,7 +720,7 @@
       <div class="form-row">
         <div class="form-group">
           <label for="import-grupo">Grupo *</label>
-          <input type="text" id="import-grupo" placeholder="Ej: MAT-A1" />
+          <input type="text" id="import-grupo" placeholder="Ej: MAT-A1" list="grupos-datalist" />
         </div>
         <div class="form-group">
           <label for="import-tipo">Tipo de curso *</label>
@@ -769,6 +769,9 @@
 
 <!-- Toast container -->
 <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+<!-- Sugerencias de autocompletado para el campo Grupo (evita duplicados por mayúsculas/acentos) -->
+<datalist id="grupos-datalist"></datalist>
 
 <!-- ============================================================
      Scripts

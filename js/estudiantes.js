@@ -4,6 +4,7 @@
 
 async function initEstudiantes() {
   await cargarGruposEnSelect('est-filter-grupo');
+  await cargarGruposEnDatalist('grupos-datalist');
 
   const btnNuevo = document.getElementById('btn-nuevo-estudiante');
   const btnImportar = document.getElementById('btn-importar-excel');
@@ -252,4 +253,5 @@ async function guardarEstudiante() {
   await cargarGruposEnSelect('reg-grupo');
   await cargarGruposEnSelect('hist-grupo');
   await cargarGruposEnSelect('est-filter-grupo');
+  await cargarGruposEnDatalist('grupos-datalist');
 }

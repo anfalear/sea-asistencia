@@ -5,6 +5,7 @@
 let _importPreview = [];
 
 function abrirImportador() {
+  cargarGruposEnDatalist('grupos-datalist');
   document.getElementById('modal-importador').classList.remove('hidden');
   document.getElementById('import-file').value = '';
   document.getElementById('import-profesor').value = '';

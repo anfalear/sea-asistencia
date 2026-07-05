@@ -47,6 +47,29 @@ async function cargarGruposEnSelect(selectId) {
   if (prev) select.value = prev;
 }
 
+// ---- Cargar sugerencias de grupos existentes en un <datalist> ----
+// Evita que se repita el mismo grupo con distinta capitalización/acentos.
+
+async function cargarGruposEnDatalist(datalistId) {
+  const { data } = await db
+    .from('estudiantes')
+    .select('curso_grupo')
+    .order('curso_grupo');
+
+  const datalist = document.getElementById(datalistId);
+  if (!datalist) return;
+
+  datalist.innerHTML = '';
+  if (!data?.length) return;
+
+  const grupos = [...new Set(data.map(r => r.curso_grupo))];
+  grupos.forEach(g => {
+    const opt = document.createElement('option');
+    opt.value = g;
+    datalist.appendChild(opt);
+  });
+}
+
 // ---- Cargar estudiantes del grupo seleccionado ----
 
 async function cargarGrupo() {
