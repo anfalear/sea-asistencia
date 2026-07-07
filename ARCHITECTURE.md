@@ -116,7 +116,7 @@ Modales (todos definidos en `index.html`, controlados por `classList.toggle('hid
 - `curso_grupo` y `profesor_email` no tienen tabla propia: son texto libre en `estudiantes`/`asistencias`. Un "grupo" es simplemente el conjunto de estudiantes que comparten el mismo `curso_grupo`. Los selects de grupo (`cargarGruposEnSelect`) se arman con `SELECT DISTINCT curso_grupo FROM estudiantes WHERE activo=true` — un grupo sin estudiantes activos deja de aparecer en los selectores.
 - `nombre_completo` se guarda en mayúsculas, formato `APELLIDO1 APELLIDO2 NOMBRE1 NOMBRE2` (ver `seed_datos_prueba.sql` e `importador.js`).
 - `profesor_email` siempre en minúsculas (`.toLowerCase()` al guardar en `estudiantes.js`/`importador.js`); `curso_grupo` siempre en mayúsculas (`.toUpperCase()`).
-- Los puntajes de taller (`comunicacion`, `procedimientos`, `representacion`, `razonamiento`) son 1–5, opcionales, sin validación de rango en el cliente más allá de `min`/`max` del `<input type="number">`.
+- Los puntajes de taller (`comunicacion`, `procedimientos`, `representacion`, `razonamiento`) son 1–5, opcionales, con CHECK de rango en BD. `validarPuntajes()` en `registro.js` valida el rango en el cliente ANTES de escribir en la BD — es obligatorio porque el flujo de edición borra el detalle previo antes de insertar el nuevo, y un CHECK violado a mitad de camino dejaría la sesión sin detalle (hay una restauración de emergencia en `guardarAsistencia()`, pero la validación previa es la defensa principal).
 
 ## Diseño (`css/styles.css`)
 

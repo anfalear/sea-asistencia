@@ -270,8 +270,42 @@ function actualizarContadores() {
 // ---- Ordenar tarjetas ----
 
 function leerPuntajeInt(item, selector) {
-  const raw = item.querySelector(selector)?.value;
-  return raw ? parseInt(raw, 10) : null;
+  const raw = item.querySelector(selector)?.value.trim();
+  if (!raw) return null;
+  const n = parseInt(raw, 10);
+  return isNaN(n) ? null : n;
+}
+
+// Rangos válidos según los CHECK de la BD (detalle_asistencias_*_check)
+const PUNTAJE_CAMPOS = [
+  { selector: '.est-taller',         nombre: 'Taller',         min: 1, max: 99 },
+  { selector: '.est-comunicacion',   nombre: 'Comunicación',   min: 1, max: 5 },
+  { selector: '.est-procedimientos', nombre: 'Procedimientos', min: 1, max: 5 },
+  { selector: '.est-representacion', nombre: 'Representación', min: 1, max: 5 },
+  { selector: '.est-razonamiento',   nombre: 'Razonamiento',   min: 1, max: 5 },
+];
+
+function validarPuntajes(items) {
+  for (const it of items) {
+    for (const campo of PUNTAJE_CAMPOS) {
+      const input = it.querySelector(campo.selector);
+      const raw = input?.value.trim();
+      if (!raw) continue;
+      const n = parseInt(raw, 10);
+      if (isNaN(n) || n < campo.min || n > campo.max) {
+        const nombre = it.querySelector('.student-name')?.textContent || 'un estudiante';
+        toast(
+          `"${campo.nombre}" de ${nombre} tiene el valor "${raw}". ` +
+          `Debe estar entre ${campo.min} y ${campo.max}, o dejarse vacío. No se guardó nada.`,
+          'error'
+        );
+        it.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        input.focus();
+        return false;
+      }
+    }
+  }
+  return true;
 }
 
 function captureCurrentState() {
@@ -326,6 +360,10 @@ async function guardarAsistencia() {
 
   const items = document.querySelectorAll('.student-item');
   if (!items.length) return;
+
+  // Validar puntajes ANTES de tocar la BD: un valor fuera de rango
+  // violaría los CHECK de detalle_asistencias y dejaría la edición a medias.
+  if (!validarPuntajes(items)) return;
 
   // Si nadie está marcado como presente, confirmar antes de guardar todos como ausentes
   const hayPresentes = [...items].some(it => it.classList.contains('presente'));
@@ -433,6 +471,22 @@ async function guardarAsistencia() {
   const { error: detErr } = await db.from('detalle_asistencias').insert(detallePayload);
   if (detErr) {
     console.error('[SEA] Error insertando detalle:', detErr.message);
+
+    // El detalle previo ya fue borrado (flujo de edición): intentar restaurarlo
+    // para que un fallo en el insert no deje la sesión sin detalle.
+    if (asistenciaExistente?.detalle_asistencias?.length) {
+      const restore = asistenciaExistente.detalle_asistencias.map(d => ({
+        asistencia_id: asistenciaId,
+        ...d,
+      }));
+      const { error: restErr } = await db.from('detalle_asistencias').insert(restore);
+      if (restErr) {
+        console.error('[SEA] No se pudo restaurar el detalle previo:', restErr.message);
+      } else {
+        console.warn('[SEA] Detalle previo restaurado tras fallo del guardado.');
+      }
+    }
+
     toast('Error al guardar el detalle: ' + detErr.message, 'error');
     btn.disabled = false;
     btn.textContent = 'Guardar Asistencia';
