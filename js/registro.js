@@ -85,11 +85,13 @@ async function cargarGrupo() {
   btn.disabled = true;
   btn.textContent = 'Cargando...';
 
+  // Sin filtro de activo: un inactivo con registro en ESTA sesión debe seguir en la
+  // planilla, porque guardarAsistencia() reemplaza todo el detalle con lo que haya en
+  // pantalla — ocultarlo borraría su historial al volver a guardar.
   const { data: ests, error: estErr } = await db
     .from('estudiantes')
-    .select('id, codigo_estudiante, nombre_completo, tipo_curso, created_at')
+    .select('id, codigo_estudiante, nombre_completo, tipo_curso, created_at, activo')
     .eq('curso_grupo', grupo)
-    .eq('activo', true)
     .order('nombre_completo');
 
   // Verificar registro existente
@@ -107,31 +109,34 @@ async function cargarGrupo() {
   btn.textContent = 'Cargar grupo';
 
   if (estErr || !ests?.length) {
-    toast('No hay estudiantes activos en este grupo.', 'warning');
+    toast('No hay estudiantes en este grupo.', 'warning');
     return;
   }
 
-  // guardarAsistencia() reemplaza TODO el detalle de la sesión con lo que haya en
-  // la planilla. Si mostráramos a quien se matriculó después de esta fecha, quedaría
-  // marcado como ausente en una clase anterior a su matrícula. Se exceptúa a quien ya
-  // tenga registro en la sesión: ocultarlo borraría su asistencia al volver a guardar.
+  // La planilla muestra: activos ya matriculados en la fecha de la sesión, más
+  // cualquiera (activo o no) que YA tenga registro en ella. Mostrar a un matriculado
+  // después de la fecha lo marcaría ausente en una clase anterior a su matrícula.
   const yaRegistrados = new Set(
     (existing?.detalle_asistencias || []).map(d => d.estudiante_id)
   );
   const visibles = ests.filter(e =>
-    fechaLocalISO(e.created_at) <= fecha || yaRegistrados.has(e.id)
+    (e.activo && fechaLocalISO(e.created_at) <= fecha) || yaRegistrados.has(e.id)
   );
 
   if (!visibles.length) {
-    toast('Ningún estudiante de este grupo estaba matriculado en esa fecha.', 'warning');
+    toast('Ningún estudiante del grupo estaba matriculado y activo en esa fecha.', 'warning');
     return;
   }
 
-  const ocultos = ests.length - visibles.length;
-  if (ocultos > 0) {
+  // Solo se avisa por los matriculados tarde; los inactivos sin registro se omiten
+  // en silencio, igual que siempre.
+  const ocultosPorFecha = ests.filter(e =>
+    e.activo && fechaLocalISO(e.created_at) > fecha && !yaRegistrados.has(e.id)
+  ).length;
+  if (ocultosPorFecha > 0) {
     toast(
-      `${ocultos} estudiante${ocultos !== 1 ? 's' : ''} no aparece${ocultos !== 1 ? 'n' : ''}: ` +
-      `se matriculó después de esta fecha.`,
+      `${ocultosPorFecha} estudiante${ocultosPorFecha !== 1 ? 's' : ''} ` +
+      `no aparece${ocultosPorFecha !== 1 ? 'n' : ''}: se matriculó después de esta fecha.`,
       'default'
     );
   }
@@ -199,10 +204,14 @@ function renderStudentList(estudiantes, existing) {
 
     const puntaje = (campo) => (d?.[campo] !== null && d?.[campo] !== undefined) ? d[campo] : '';
 
+    const inactivoBadge = est.activo === false
+      ? ' <span class="badge badge-gray">Inactivo</span>'
+      : '';
+
     return `
       <div class="student-item ${estadoClass}" data-id="${est.id}">
         <div class="student-header">
-          <div class="student-name">${escapeHtml(est.nombre_completo)}</div>
+          <div class="student-name">${escapeHtml(est.nombre_completo)}${inactivoBadge}</div>
           <div class="student-code">${est.codigo_estudiante}</div>
         </div>
         <div class="student-presence">
