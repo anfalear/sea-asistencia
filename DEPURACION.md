@@ -152,6 +152,30 @@ Nota sobre `presente`: puede ser `NULL` si el profesor no tocó ninguno de los d
 (`registro.js:316`). `NULL` no es lo mismo que ausente. Si `veces_registrado > ausencias + presencias`
 en algún grupo, hay planillas guardadas a medio llenar y los datos no sirven para depurar.
 
+## ⚠ Desactivar borra historial si alguien reabre una sesión vieja
+
+**No arreglado. Léelo antes de desactivar a nadie.**
+
+`guardarAsistencia()` hace `DELETE FROM detalle_asistencias WHERE asistencia_id = X`
+(`registro.js:461`) y reinserta solo a los estudiantes que están en la planilla. La planilla filtra
+`activo = true` (`registro.js:92`).
+
+Consecuencia: **si un profesor reabre y vuelve a guardar una sesión anterior a la depuración, se
+pierde para siempre la asistencia de todos los estudiantes que desactivaste** en esa sesión. Sin
+aviso, sin error. El Historial, el export y las estadísticas cambian en silencio.
+
+El riesgo es real justo después de depurar, que es cuando los profesores están corrigiendo planillas
+de cierre. Mientras no se arregle:
+
+- Avisa a los profesores de no reabrir sesiones viejas después de la depuración, **o**
+- depura al final del periodo, cuando ya nadie va a editar sesiones, **o**
+- exporta el Historial completo a Excel antes de desactivar, como respaldo.
+
+El arreglo de fondo es que el `DELETE` acote a los estudiantes de la planilla
+(`.in('estudiante_id', ids)`) en vez de borrar toda la sesión, o que `cargarGrupo()` incluya a los
+inactivos que ya tienen registro en esa fecha —la misma excepción que ya se aplica a los matriculados
+tarde—.
+
 ## Pendientes
 
 - [ ] **Limpiar las filas espurias de AV**: los 10 estudiantes creados el 2026-07-09 tienen
@@ -164,5 +188,8 @@ en algún grupo, hay planillas guardadas a medio llenar y los datos no sirven pa
 - [x] **Eliminar el typo en la fuente** (2026-07-10): los campos de correo del profesor (importador y
       formulario de estudiante) autocompletan desde `email_whitelist`, y ambos formularios **rechazan
       el guardado** si el correo no está en la whitelist.
+- [ ] **Acotar el `DELETE` de `guardarAsistencia()`** (`registro.js:461`) a los estudiantes de la
+      planilla, para que reabrir una sesión no borre el historial de los desactivados. Ver la
+      advertencia de arriba — es lo más urgente si vas a depurar antes del cierre.
 - [ ] **Botón de depuración en la vista Estudiantes** (opcional): filtro "sin asistencias" +
       desactivación en lote, para no depender de SQL manual cada semestre.
