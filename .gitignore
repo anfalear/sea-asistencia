@@ -1,3 +1,6 @@
 .DS_Store
 Thumbs.db
 *.log
+
+# Respaldos de la BD: contienen datos reales de estudiantes, nunca al repo
+backups/
