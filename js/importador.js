@@ -6,6 +6,7 @@ let _importPreview = [];
 
 function abrirImportador() {
   cargarGruposEnDatalist('grupos-datalist');
+  cargarProfesoresEnDatalist('profesores-datalist');
   document.getElementById('modal-importador').classList.remove('hidden');
   document.getElementById('import-file').value = '';
   document.getElementById('import-profesor').value = '';
@@ -101,6 +102,17 @@ async function ejecutarImportacion() {
 
   if (!_importPreview.length) {
     toast('Carga un archivo primero.', 'warning');
+    return;
+  }
+
+  // Un typo aquí esconde a TODO el lote importado de su profesor (la RLS compara
+  // profesor_email contra el correo del JWT). Verificar antes de escribir.
+  if (!await esProfesorAutorizado(profesor)) {
+    toast(
+      `"${profesor}" no está en la lista de correos autorizados. ` +
+      `Revísalo: un correo mal escrito esconde a todo el grupo de su profesor.`,
+      'error'
+    );
     return;
   }
 

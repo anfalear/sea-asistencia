@@ -42,6 +42,39 @@ async function verificarWhitelist(email) {
   return data !== null;
 }
 
+// ---- La whitelist como fuente de correos de profesor ----
+// Un typo en estudiantes.profesor_email esconde al estudiante de su profesor: la RLS
+// compara el correo del JWT contra esa columna, carácter por carácter. La whitelist es
+// la única lista de correos que pueden iniciar sesión, así que es la única válida ahí.
+
+async function cargarProfesoresEnDatalist(datalistId) {
+  const datalist = document.getElementById(datalistId);
+  if (!datalist) return;
+
+  const { data } = await db
+    .from('email_whitelist')
+    .select('email')
+    .order('email');
+
+  datalist.innerHTML = '';
+  data?.forEach(r => {
+    const opt = document.createElement('option');
+    opt.value = r.email;
+    datalist.appendChild(opt);
+  });
+}
+
+async function esProfesorAutorizado(email) {
+  const { data, error } = await db
+    .from('email_whitelist')
+    .select('email')
+    .eq('email', email)
+    .maybeSingle();
+
+  if (error) return true; // no bloquear el guardado si la consulta falla
+  return data !== null;
+}
+
 async function loginConGoogle() {
   const redirectTo = window.location.origin + window.location.pathname;
   const { error } = await db.auth.signInWithOAuth({

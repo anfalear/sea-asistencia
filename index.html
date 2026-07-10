@@ -500,7 +500,8 @@
           </div>
           <div class="form-group">
             <label for="est-profesor">Email del profesor *</label>
-            <input type="email" id="est-profesor" placeholder="profesor@uis.edu.co" required />
+            <input type="email" id="est-profesor" placeholder="profesor@uis.edu.co"
+                   list="profesores-datalist" required />
           </div>
         </div>
 
@@ -714,7 +715,8 @@
 
       <div class="form-group">
         <label for="import-profesor">Profesor (email) *</label>
-        <input type="email" id="import-profesor" placeholder="Ej: profesor@correo.uis.edu.co" />
+        <input type="email" id="import-profesor" placeholder="Ej: profesor@correo.uis.edu.co"
+               list="profesores-datalist" />
       </div>
 
       <div class="form-row">
@@ -773,6 +775,10 @@
 <!-- Sugerencias de autocompletado para el campo Grupo (evita duplicados por mayúsculas/acentos) -->
 <datalist id="grupos-datalist"></datalist>
 
+<!-- Sugerencias para el campo Email del profesor, tomadas de email_whitelist (evita typos
+     que esconderían al estudiante de su profesor por RLS) -->
+<datalist id="profesores-datalist"></datalist>
+
 <!-- ============================================================
      Scripts
      ============================================================ -->
@@ -780,16 +786,16 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="js/config.js?v=3"></script>
-<script src="js/ui.js?v=5"></script>
-<script src="js/auth.js?v=4"></script>
+<script src="js/ui.js?v=6"></script>
+<script src="js/auth.js?v=5"></script>
 <script src="js/dashboard.js?v=4"></script>
-<script src="js/registro.js?v=6"></script>
+<script src="js/registro.js?v=7"></script>
 <script src="js/historial.js?v=4"></script>
-<script src="js/estudiantes.js?v=5"></script>
+<script src="js/estudiantes.js?v=6"></script>
 <script src="js/alertas.js?v=4"></script>
 <script src="js/export.js?v=5"></script>
 <script src="js/estadisticas.js?v=4"></script>
-<script src="js/importador.js?v=5"></script>
+<script src="js/importador.js?v=6"></script>
 <script src="js/informe_estudiante.js?v=5"></script>
 <script src="js/main.js?v=4"></script>
 

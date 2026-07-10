@@ -87,26 +87,10 @@ async function cargarGrupo() {
 
   const { data: ests, error: estErr } = await db
     .from('estudiantes')
-    .select('id, codigo_estudiante, nombre_completo, tipo_curso')
+    .select('id, codigo_estudiante, nombre_completo, tipo_curso, created_at')
     .eq('curso_grupo', grupo)
     .eq('activo', true)
     .order('nombre_completo');
-
-  btn.disabled = false;
-  btn.textContent = 'Cargar grupo';
-
-  if (estErr || !ests?.length) {
-    toast('No hay estudiantes activos en este grupo.', 'warning');
-    return;
-  }
-
-  estudiantesActuales = ests;
-  grupoActual = { grupo, fecha, tipo_curso: ests[0].tipo_curso };
-  ordenActual = 'nombre';
-
-  // Reiniciar botones de orden
-  document.getElementById('sort-btn-nombre')?.classList.replace('btn-ghost', 'btn-primary');
-  document.getElementById('sort-btn-codigo')?.classList.replace('btn-primary', 'btn-ghost');
 
   // Verificar registro existente
   const { data: existing } = await db
@@ -119,7 +103,48 @@ async function cargarGrupo() {
     .eq('curso_grupo', grupo)
     .maybeSingle();
 
+  btn.disabled = false;
+  btn.textContent = 'Cargar grupo';
+
+  if (estErr || !ests?.length) {
+    toast('No hay estudiantes activos en este grupo.', 'warning');
+    return;
+  }
+
+  // guardarAsistencia() reemplaza TODO el detalle de la sesión con lo que haya en
+  // la planilla. Si mostráramos a quien se matriculó después de esta fecha, quedaría
+  // marcado como ausente en una clase anterior a su matrícula. Se exceptúa a quien ya
+  // tenga registro en la sesión: ocultarlo borraría su asistencia al volver a guardar.
+  const yaRegistrados = new Set(
+    (existing?.detalle_asistencias || []).map(d => d.estudiante_id)
+  );
+  const visibles = ests.filter(e =>
+    fechaLocalISO(e.created_at) <= fecha || yaRegistrados.has(e.id)
+  );
+
+  if (!visibles.length) {
+    toast('Ningún estudiante de este grupo estaba matriculado en esa fecha.', 'warning');
+    return;
+  }
+
+  const ocultos = ests.length - visibles.length;
+  if (ocultos > 0) {
+    toast(
+      `${ocultos} estudiante${ocultos !== 1 ? 's' : ''} no aparece${ocultos !== 1 ? 'n' : ''}: ` +
+      `se matriculó después de esta fecha.`,
+      'default'
+    );
+  }
+
   asistenciaExistente = existing;
+
+  estudiantesActuales = visibles;
+  grupoActual = { grupo, fecha, tipo_curso: visibles[0].tipo_curso };
+  ordenActual = 'nombre';
+
+  // Reiniciar botones de orden
+  document.getElementById('sort-btn-nombre')?.classList.replace('btn-ghost', 'btn-primary');
+  document.getElementById('sort-btn-codigo')?.classList.replace('btn-primary', 'btn-ghost');
 
   const tallerExistente = existing?.detalle_asistencias
     ?.find(d => d.numero_taller !== null && d.numero_taller !== undefined)
@@ -128,8 +153,8 @@ async function cargarGrupo() {
     document.getElementById('reg-num-taller').value = tallerExistente;
   }
 
-  renderStudentList(ests, existing);
-  mostrarFormRegistro(grupo, ests[0].tipo_curso, existing);
+  renderStudentList(visibles, existing);
+  mostrarFormRegistro(grupo, visibles[0].tipo_curso, existing);
 }
 
 function mostrarFormRegistro(grupo, tipoCurso, existing) {

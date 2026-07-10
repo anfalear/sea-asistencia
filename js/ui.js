@@ -46,9 +46,17 @@ function navigateTo(view) {
 
 // ---- Fecha de hoy ----
 
+// Fecha (YYYY-MM-DD) en la zona horaria del navegador, no en UTC. Con toISOString()
+// a secas, después de las 7pm en Colombia (UTC-5) la fecha salta al día siguiente.
+function fechaLocalISO(value) {
+  const d = value ? new Date(value) : new Date();
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60000)
+    .toISOString()
+    .slice(0, 10);
+}
+
 function todayISO() {
-  const now = new Date();
-  return now.toISOString().split('T')[0];
+  return fechaLocalISO();
 }
 
 function formatDate(iso) {

@@ -5,6 +5,7 @@
 async function initEstudiantes() {
   await cargarGruposEnSelect('est-filter-grupo');
   await cargarGruposEnDatalist('grupos-datalist');
+  await cargarProfesoresEnDatalist('profesores-datalist');
 
   const btnNuevo = document.getElementById('btn-nuevo-estudiante');
   const btnImportar = document.getElementById('btn-importar-excel');
@@ -212,12 +213,23 @@ async function guardarEstudiante() {
     return;
   }
 
+  const profEmail = prof.toLowerCase();
+
+  if (!await esProfesorAutorizado(profEmail)) {
+    toast(
+      `"${profEmail}" no está en la lista de correos autorizados. ` +
+      `Un correo mal escrito esconde al estudiante de su profesor.`,
+      'error'
+    );
+    return;
+  }
+
   const payload = {
     codigo_estudiante: codigo,
     nombre_completo:   nombre,
     curso_grupo:       grupo.toUpperCase(),
     tipo_curso:        tipo,
-    profesor_email:    prof.toLowerCase(),
+    profesor_email:    profEmail,
     email:             email,
     direccion_electron: dirElectron,
     telefono_reside:   telefono,
