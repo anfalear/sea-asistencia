@@ -61,6 +61,8 @@ Un registro por **sesión** (fecha + grupo): `id`, `fecha`, `profesor_email`, `c
 
 Las columnas `alerta_precalculo`, `alerta_psicologia`, `observaciones` que aparecen en `schema.sql` para esta tabla **ya no existen**: `migration_alerts.sql` las movió a `detalle_asistencias` para que la alerta sea por estudiante, no por sesión completa.
 
+`profesor_email` se fija **solo al crear** la sesión y no se toca al editarla: como el RLS de `asistencias` (y el de `detalle_asistencias`, que cuelga de ella) compara ese campo contra el email del JWT, sobreescribirlo en el update haría que una sesión editada por el admin pasara a ser suya y desapareciera para el profesor dueño (bug real, corregido en `registro.js` v9). Si esto vuelve a pasar con datos ya escritos, se arregla con un `UPDATE asistencias SET profesor_email = ...` en el SQL Editor.
+
 ### `detalle_asistencias`
 Un registro por **estudiante × sesión**: `id`, `asistencia_id (fk)`, `estudiante_id (fk)`, `presente (bool)`. `UNIQUE (asistencia_id, estudiante_id)`.
 
