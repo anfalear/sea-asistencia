@@ -436,9 +436,11 @@ async function guardarAsistencia() {
     });
   });
 
+  // profesor_email NO va en el update: al editar una sesión ajena (p. ej. el admin
+  // corrigiendo la de un profesor), sobreescribirlo le quitaría la sesión a su dueño
+  // y el RLS se la ocultaría. Solo se fija al crear la sesión.
   const payload = {
     fecha:          grupoActual.fecha,
-    profesor_email: currentUser.email,
     curso_grupo:    grupoActual.grupo,
     tipo_curso:     grupoActual.tipo_curso,
     presentes,
@@ -471,7 +473,7 @@ async function guardarAsistencia() {
   } else {
     const { data, error } = await db
       .from('asistencias')
-      .insert(payload)
+      .insert({ ...payload, profesor_email: currentUser.email })
       .select('id')
       .single();
 
