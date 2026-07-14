@@ -21,7 +21,7 @@ async function exportarAsistencias() {
     .select(`
       fecha, curso_grupo, tipo_curso, presentes, ausentes, profesor_email,
       detalle_asistencias(
-        presente, alerta_precalculo, alerta_psicologia, observacion,
+        estudiante_id, presente, alerta_precalculo, alerta_psicologia, observacion,
         numero_taller, comunicacion, procedimientos, representacion, razonamiento,
         estudiantes(codigo_estudiante, nombre_completo, email, direccion_electron, telefono_reside)
       )
@@ -43,6 +43,45 @@ async function exportarAsistencias() {
 
   const { data: informesData, error: informesError } = await informesQuery;
 
+  // Estudiantes para las hojas de resumen de inasistencias
+  let estudiantesQuery = db
+    .from('estudiantes')
+    .select('id, codigo_estudiante, nombre_completo, curso_grupo, tipo_curso, profesor_email, activo')
+    .order('nombre_completo');
+
+  if (grupo) estudiantesQuery = estudiantesQuery.eq('curso_grupo', grupo);
+
+  const { data: estudiantesData, error: estudiantesError } = await estudiantesQuery;
+
+  // Conteo histórico de sesiones/inasistencias por estudiante.
+  // Paginado porque Supabase devuelve máximo 1000 filas por consulta.
+  const histTotales   = {};
+  const histAusencias = {};
+  let histError = null;
+
+  if (estudiantesData?.length) {
+    const ids = estudiantesData.map(e => e.id);
+    const PAGINA = 1000;
+    for (let desde = 0; ; desde += PAGINA) {
+      const { data: pagina, error: errPagina } = await db
+        .from('detalle_asistencias')
+        .select('estudiante_id, presente')
+        .in('estudiante_id', ids)
+        .range(desde, desde + PAGINA - 1);
+
+      if (errPagina) { histError = errPagina; break; }
+
+      (pagina || []).forEach(d => {
+        histTotales[d.estudiante_id] = (histTotales[d.estudiante_id] || 0) + 1;
+        if (!d.presente) {
+          histAusencias[d.estudiante_id] = (histAusencias[d.estudiante_id] || 0) + 1;
+        }
+      });
+
+      if (!pagina || pagina.length < PAGINA) break;
+    }
+  }
+
   btn.disabled = false;
   btn.textContent = '↓ Descargar Excel';
 
@@ -52,6 +91,14 @@ async function exportarAsistencias() {
   }
   if (informesError) {
     toast('Error al obtener informes: ' + informesError.message, 'error');
+    return;
+  }
+  if (estudiantesError) {
+    toast('Error al obtener estudiantes: ' + estudiantesError.message, 'error');
+    return;
+  }
+  if (histError) {
+    toast('Error al contar inasistencias: ' + histError.message, 'error');
     return;
   }
 
@@ -64,11 +111,20 @@ async function exportarAsistencias() {
   const filasPuntajes   = [];
   const filasBitacora   = [];
 
+  // Conteo de sesiones/inasistencias dentro del rango consultado
+  const rangoTotales   = {};
+  const rangoAusencias = {};
+
   data.forEach(sesion => {
     const detalles = sesion.detalle_asistencias || [];
     if (detalles.length) {
       detalles.forEach(d => {
         const nombreEst = d.estudiantes?.nombre_completo || '';
+
+        rangoTotales[d.estudiante_id] = (rangoTotales[d.estudiante_id] || 0) + 1;
+        if (!d.presente) {
+          rangoAusencias[d.estudiante_id] = (rangoAusencias[d.estudiante_id] || 0) + 1;
+        }
 
         filasAsistencia.push({
           'Fecha':             sesion.fecha,
@@ -119,6 +175,20 @@ async function exportarAsistencias() {
     }
   });
 
+  const filaResumen = (e, ausencias, totales) => ({
+    'Código':         e.codigo_estudiante,
+    'Nombre':         e.nombre_completo,
+    'Grupo':          e.curso_grupo,
+    'Tipo':           e.tipo_curso,
+    'Profesor':       e.profesor_email,
+    'Estado':         e.activo ? 'Activo' : 'Inactivo',
+    'Inasistencias':  ausencias[e.id] || 0,
+    'Total Sesiones': totales[e.id]   || 0,
+  });
+
+  const filasInasistGeneral = (estudiantesData || []).map(e => filaResumen(e, histAusencias, histTotales));
+  const filasInasistRango   = (estudiantesData || []).map(e => filaResumen(e, rangoAusencias, rangoTotales));
+
   const filasInformes = (informesData || []).map(inf => ({
     'Estudiante':        inf.estudiantes?.nombre_completo || '',
     'Cód. Estudiante':   inf.estudiantes?.codigo_estudiante || '',
@@ -149,8 +219,21 @@ async function exportarAsistencias() {
     { wch: 32 }, { wch: 14 }, { wch: 12 }, { wch: 60 },
   ];
 
+  const colsResumen = [
+    { wch: 14 }, { wch: 32 }, { wch: 14 }, { wch: 12 },
+    { wch: 28 }, { wch: 10 }, { wch: 13 }, { wch: 14 },
+  ];
+
+  const wsInasistGeneral = XLSX.utils.json_to_sheet(filasInasistGeneral);
+  wsInasistGeneral['!cols'] = colsResumen;
+
+  const wsInasistRango = XLSX.utils.json_to_sheet(filasInasistRango);
+  wsInasistRango['!cols'] = colsResumen;
+
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, wsAsistencia, 'Asistencia');
+  XLSX.utils.book_append_sheet(wb, wsInasistGeneral, 'Inasistencias General');
+  XLSX.utils.book_append_sheet(wb, wsInasistRango, 'Inasistencias por Rango');
   XLSX.utils.book_append_sheet(wb, wsPuntajes, 'Puntajes');
   XLSX.utils.book_append_sheet(wb, wsBitacora, 'Bitácora');
   XLSX.utils.book_append_sheet(wb, wsInformes, 'Informes');

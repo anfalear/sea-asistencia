@@ -36,7 +36,7 @@ js/
   alertas.js                  Vista Alertas (dos pestañas: Didáctica / Psicología)
   estadisticas.js              Modal de estadísticas de asistencia por estudiante (doughnut chart)
   importador.js                 Modal de importación masiva desde Excel SIAE (solo admin)
-  export.js                     Genera el .xlsx de Historial (4 hojas)
+  export.js                     Genera el .xlsx de Historial (6 hojas: Asistencia, Inasistencias General [histórico], Inasistencias por Rango, Puntajes, Bitácora, Informes)
 schema.sql                Definición base de tablas + RLS (desactualizado, ver "Deuda técnica")
 migration_precalculo.sql  Renombre de tipo_curso + creación de email_whitelist
 migration_alerts.sql      Mueve alertas/observación de asistencias → detalle_asistencias (por estudiante)
