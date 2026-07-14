@@ -69,18 +69,25 @@ async function cargarEstudiantes() {
     return;
   }
 
-  // Contar inasistencias por estudiante
+  // Contar inasistencias por estudiante.
+  // Paginado porque Supabase devuelve máximo 1000 filas por consulta.
   const ids = data.map(e => e.id);
   const ausenciasMap = {};
-  const { data: ausData } = await db
-    .from('detalle_asistencias')
-    .select('estudiante_id')
-    .in('estudiante_id', ids)
-    .eq('presente', false);
+  const PAGINA = 1000;
+  for (let desde = 0; ; desde += PAGINA) {
+    const { data: ausData } = await db
+      .from('detalle_asistencias')
+      .select('estudiante_id')
+      .in('estudiante_id', ids)
+      .eq('presente', false)
+      .range(desde, desde + PAGINA - 1);
 
-  ausData?.forEach(d => {
-    ausenciasMap[d.estudiante_id] = (ausenciasMap[d.estudiante_id] || 0) + 1;
-  });
+    ausData?.forEach(d => {
+      ausenciasMap[d.estudiante_id] = (ausenciasMap[d.estudiante_id] || 0) + 1;
+    });
+
+    if (!ausData || ausData.length < PAGINA) break;
+  }
 
   container.innerHTML = `
     <div class="table-wrap">
