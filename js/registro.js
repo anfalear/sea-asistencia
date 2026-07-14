@@ -15,6 +15,50 @@ async function initRegistro() {
 
   document.getElementById('btn-cargar-grupo').onclick = cargarGrupo;
   document.getElementById('btn-guardar-asistencia').onclick = guardarAsistencia;
+  document.getElementById('reg-buscar').oninput = filtrarEstudiantes;
+}
+
+// ---- Filtro de búsqueda por nombre/código ----
+// SOLO oculta tarjetas con la clase .hidden (display:none). Nunca las saca del
+// DOM: guardarAsistencia() lee document.querySelectorAll('.student-item') y al
+// editar reemplaza TODO el detalle con lo que encuentre — quitar una tarjeta
+// filtrada borraría el registro de ese estudiante en la sesión.
+
+function normalizarBusqueda(s) {
+  return (s || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+}
+
+function filtrarEstudiantes() {
+  const q = normalizarBusqueda(document.getElementById('reg-buscar')?.value);
+  const items = document.querySelectorAll('#student-list .student-item');
+  let visibles = 0;
+
+  items.forEach(it => {
+    const match = !q || (it.dataset.buscar || '').includes(q);
+    it.classList.toggle('hidden', !match);
+    if (match) visibles++;
+  });
+
+  const info = document.getElementById('reg-buscar-info');
+  if (!info) return;
+  if (q) {
+    info.classList.remove('hidden');
+    info.textContent = visibles === 0
+      ? `Ningún estudiante coincide con la búsqueda · el grupo completo (${items.length}) sigue en la planilla y se guarda entero`
+      : `Mostrando ${visibles} de ${items.length} estudiantes · al guardar se incluye SIEMPRE al grupo completo`;
+  } else {
+    info.classList.add('hidden');
+  }
+}
+
+function limpiarFiltroBusqueda() {
+  const input = document.getElementById('reg-buscar');
+  if (input) input.value = '';
+  filtrarEstudiantes();
 }
 
 // ---- Cargar lista de grupos disponibles ----
@@ -159,6 +203,7 @@ async function cargarGrupo() {
   }
 
   renderStudentList(visibles, existing);
+  limpiarFiltroBusqueda();
   mostrarFormRegistro(grupo, visibles[0].tipo_curso, existing);
 }
 
@@ -208,8 +253,12 @@ function renderStudentList(estudiantes, existing) {
       ? ' <span class="badge badge-gray">Inactivo</span>'
       : '';
 
+    const claveBusqueda = escapeHtml(
+      normalizarBusqueda(`${est.nombre_completo} ${est.codigo_estudiante}`)
+    );
+
     return `
-      <div class="student-item ${estadoClass}" data-id="${est.id}">
+      <div class="student-item ${estadoClass}" data-id="${est.id}" data-buscar="${claveBusqueda}">
         <div class="student-header">
           <div class="student-name">${escapeHtml(est.nombre_completo)}${inactivoBadge}</div>
           <div class="student-code">${est.codigo_estudiante}</div>
@@ -327,6 +376,8 @@ function validarPuntajes(items) {
       if (!raw) continue;
       const n = parseInt(raw, 10);
       if (isNaN(n) || n < campo.min || n > campo.max) {
+        // Si la tarjeta inválida está oculta por el filtro, mostrarla antes de señalarla
+        if (it.classList.contains('hidden')) limpiarFiltroBusqueda();
         const nombre = it.querySelector('.student-name')?.textContent || 'un estudiante';
         toast(
           `"${campo.nombre}" de ${nombre} tiene el valor "${raw}". ` +
@@ -383,7 +434,9 @@ function sortEstudiantes(campo) {
     btnCodigo.className = `btn btn-sm ${campo === 'codigo' ? 'btn-primary' : 'btn-ghost'}`;
   }
 
+  // El re-render pierde las clases .hidden: re-aplicar el filtro vigente
   renderStudentList(estudiantesActuales, snapshot);
+  filtrarEstudiantes();
   actualizarContadores();
 }
 

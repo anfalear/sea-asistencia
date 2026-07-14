@@ -247,6 +247,11 @@
                   <button class="btn btn-ghost btn-sm" id="sort-btn-codigo" onclick="sortEstudiantes('codigo')">Código</button>
                 </div>
               </div>
+              <div class="student-search">
+                <input type="search" id="reg-buscar" autocomplete="off"
+                       placeholder="🔍 Buscar estudiante por nombre o código..." />
+                <p class="student-search-info hidden" id="reg-buscar-info"></p>
+              </div>
               <div class="student-list" id="student-list">
                 <!-- Se renderiza con JS -->
               </div>
