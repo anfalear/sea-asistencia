@@ -45,7 +45,7 @@ seed_datos_prueba.sql     Datos ficticios para pruebas del admin (grupos MAT-A1/
 CAMBIOS_PENDIENTES.md     Registro histórico de un plan de cambios ya aplicado (puntajes de taller + informes)
 ```
 
-**Convención de carga de scripts**: `index.html` incluye cada JS con un query param de versión, p. ej. `js/registro.js?v=5`. GitHub Pages no hashea nombres de archivo, así que **cada vez que se modifica un JS, hay que subir su `?v=N`** en `index.html`, o los navegadores servirán la versión cacheada.
+**Convención de carga de scripts**: `index.html` incluye cada JS con un query param de versión, p. ej. `js/registro.js?v=5`, y desde v2 también `css/styles.css?v=N`. GitHub Pages no hashea nombres de archivo, así que **cada vez que se modifica un JS o el CSS, hay que subir su `?v=N`** en `index.html`, o los navegadores servirán la versión cacheada.
 
 ## Modelo de datos (Supabase / Postgres, esquema `public`)
 
@@ -104,7 +104,7 @@ Router simple sin URL routing (no usa `#hash` ni History API): `navigateTo(view)
 | Vista | Función de entrada | Notas |
 |---|---|---|
 | `dashboard` | `loadDashboard()` | Solo lectura: contadores + actividad reciente + alertas de 30 días |
-| `registro` | `initRegistro()` | Flujo: elegir fecha+grupo → `cargarGrupo()` trae estudiantes + registro existente si lo hay → editar tarjetas → `guardarAsistencia()` hace upsert de sesión + reemplazo total del detalle |
+| `registro` | `initRegistro()` | Flujo: elegir fecha+grupo → `cargarGrupo()` trae estudiantes + registro existente si lo hay → editar tarjetas → `guardarAsistencia()` hace upsert de sesión + reemplazo total del detalle. Barra de búsqueda (`#reg-buscar`) filtra tarjetas por nombre/código, insensible a tildes; se limpia al recargar/guardar y se re-aplica al reordenar |
 | `historial` | `initHistorial()` | Filtro por rango de fechas/grupo; botón exporta vía `export.js` |
 | `estudiantes` | `initEstudiantes()` | CRUD; botones "Nuevo"/"Importar" solo visibles si `isAdmin` |
 | `informes` | `initInformes()` | Cascada grupo → estudiante → periodo; upsert en `informes_estudiante` |
@@ -119,6 +119,7 @@ Modales (todos definidos en `index.html`, controlados por `classList.toggle('hid
 - `nombre_completo` se guarda en mayúsculas, formato `APELLIDO1 APELLIDO2 NOMBRE1 NOMBRE2` (ver `seed_datos_prueba.sql` e `importador.js`).
 - `profesor_email` siempre en minúsculas (`.toLowerCase()` al guardar en `estudiantes.js`/`importador.js`); `curso_grupo` siempre en mayúsculas (`.toUpperCase()`).
 - Los puntajes de taller (`comunicacion`, `procedimientos`, `representacion`, `razonamiento`) son 1–5, opcionales, con CHECK de rango en BD. `validarPuntajes()` en `registro.js` valida el rango en el cliente ANTES de escribir en la BD — es obligatorio porque el flujo de edición borra el detalle previo antes de insertar el nuevo, y un CHECK violado a mitad de camino dejaría la sesión sin detalle (hay una restauración de emergencia en `guardarAsistencia()`, pero la validación previa es la defensa principal).
+- **Las tarjetas `.student-item` del DOM son la fuente de verdad del guardado.** `guardarAsistencia()` lee `document.querySelectorAll('.student-item')` y, al editar, reemplaza TODO el detalle de la sesión con lo que encuentre. Por eso cualquier feature que "quite" estudiantes de la vista (búsqueda, filtros, colapsos) debe **ocultarlos con CSS** (clase `.hidden`), nunca sacarlos del DOM ni re-renderizar la lista filtrada — hacerlo borraría el registro de los ocultos al guardar. El buscador (`filtrarEstudiantes()`) y el manejo de inactivos con registro siguen esta regla; el estado presente/ausente también vive en clases del DOM, así que ocultar tampoco lo pierde.
 
 ## Diseño (`css/styles.css`)
 
@@ -145,4 +146,4 @@ Cambios de esquema (nuevas columnas/tablas/policies) se ejecutan **manualmente e
   ```
 - **`js/env.js` y `js/env.example.js` no están enlazados en `index.html`** — parecen un intento abandonado de separar credenciales, `js/config.js` es la fuente real y única. `env.js` está en `.gitignore`-like situación (no trackeado) pero no borrado; si se retoma esa separación, hay que decidir entre mantenerla o eliminar los archivos sueltos.
 - El rol admin/profesor es un único email hardcodeado (`ADMIN_EMAIL` en `config.js` + repetido literal en cada policy RLS). Agregar un segundo administrador implica editar `config.js` **y** todas las policies en Supabase — no hay tabla de roles.
-- No hay tests automatizados ni linter configurado.
+- No hay tests automatizados ni linter configurado en el repo. Sí existe una **receta de verificación manual reproducible** en `.claude/skills/verify/SKILL.md`: sirve el repo con `python -m http.server`, intercepta el CDN de Supabase con un mock que registra cada operación en `window.__dbLog`, y ejecuta checks con Playwright (chromium) — es la forma de probar flujos completos (incluido guardar asistencia) sin credenciales reales ni tocar la BD. Los scripts de cada verificación viven en el scratchpad de la sesión, no en el repo.
