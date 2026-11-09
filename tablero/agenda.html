@@ -32,9 +32,58 @@ button{cursor:pointer;border-color:var(--primary);color:var(--primary)}
   <div class="card"><form id="f" class="row"><input id="clave" type="password" placeholder="Clave de la agenda" autocomplete="current-password"><button>Ver agenda</button></form><p id="msg" class="err"></p></div>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <script>
 const db = supabase.createClient('https://tnrvxfsvmlzdjyhnedsm.supabase.co', 'sb_publishable_K0y7WopwN4jD59qZCZ5AmA_9bCShLj7');
 const DIAS = {'2026-11-10':'Martes 10 nov','2026-11-11':'Miércoles 11 nov','2026-11-12':'Jueves 12 nov'};
+const TEMAS = {
+  'Cálculo I':'Optimización','Cálculo II':'Aplicaciones de la integral',
+  'Cálculo III':'El jacobiano en el cambio de variables de integrales dobles','Álgebra Lineal II':'Valores y vectores propios',
+  'Geometría Euclidiana':'Criterios de semejanza de triángulos',
+  'Teoría de Conjuntos':'Equicardinalidad; cuándo dos conjuntos numerables tienen el mismo cardinal',
+  'Teoría de Números':'Funciones multiplicativas','Análisis Matemático I':'Convergencia uniforme',
+  'Fundamentos de Matemáticas':'Un método de demostración, a elección del candidato, con un ejemplo',
+  'Álgebra Moderna I':'Primer teorema de isomorfismo de grupos'};
+const DIAS_LARGO = {'2026-11-10':'Martes 10 de noviembre de 2026','2026-11-11':'Miércoles 11 de noviembre de 2026','2026-11-12':'Jueves 12 de noviembre de 2026'};
+function fin(s){ const [h,m]=s.slice(11).split(':').map(Number), t=h*60+m+15; return h12(s.slice(0,11)+String(Math.floor(t/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0')); }
+function generarPdf(R, P){
+  const {jsPDF} = window.jspdf, doc = new jsPDF({unit:'pt', format:'letter'});
+  const W = doc.internal.pageSize.getWidth(), H = doc.internal.pageSize.getHeight(), azul = [31,78,120];
+  doc.setFont('helvetica','bold'); doc.setFontSize(14);
+  doc.text('Agenda de sesiones de tutoría en tablero', 40, 50);
+  doc.setFont('helvetica','normal'); doc.setFontSize(10);
+  doc.text('SEA-Matemáticas · Escuela de Matemáticas · UIS · Convocatoria de tutores 2027-1', 40, 66);
+  doc.text('Sesión de 15 min: apertura 2 · desarrollo guiado 7 · verificación y cierre 2 · preguntas de los evaluadores 4', 40, 80);
+  doc.setTextColor(120); doc.text('Generada: ' + new Date().toLocaleString('es-CO', {timeZone:'America/Bogota'}), 40, 94); doc.setTextColor(0);
+  let y = 114;
+  for (const d of Object.keys(DIAS_LARGO)) {
+    const filas = R.filter(r => r.slot.startsWith(d));
+    if (!filas.length) continue;
+    if (y > H - 120) { doc.addPage(); y = 50; }
+    doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.text(DIAS_LARGO[d] + '  (' + filas.length + (filas.length===1?' sesión)':' sesiones)'), 40, y);
+    doc.autoTable({startY: y + 6, margin:{left:40, right:40}, theme:'grid',
+      head:[['Hora','Asignatura','Tema','Candidato','Código']],
+      body: filas.map(r => [h12(r.slot)+' – '+fin(r.slot), r.asignatura, TEMAS[r.asignatura]||'', r.nombre, r.codigo]),
+      styles:{fontSize:8.5, cellPadding:4, valign:'middle'}, headStyles:{fillColor:azul},
+      columnStyles:{0:{cellWidth:92},1:{cellWidth:95},3:{cellWidth:115},4:{cellWidth:48}}});
+    y = doc.lastAutoTable.finalY + 24;
+  }
+  if (!R.length) { doc.setFontSize(10); doc.text('Aún no hay reservas.', 40, y); y += 24; }
+  if (P.length) {
+    if (y > H - 120) { doc.addPage(); y = 50; }
+    doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(180,83,9);
+    doc.text('Sin reservar (' + P.length + ')', 40, y); doc.setTextColor(0);
+    doc.autoTable({startY: y + 6, margin:{left:40, right:40}, theme:'grid',
+      head:[['Asignatura','Candidato','Código','Correo']],
+      body: P.map(p => [p.asignatura, p.nombre, p.codigo, p.correo]),
+      styles:{fontSize:8.5, cellPadding:4}, headStyles:{fillColor:[180,83,9]}});
+  }
+  const n = doc.getNumberOfPages();
+  for (let i = 1; i <= n; i++) { doc.setPage(i); doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(120);
+    doc.text('Página ' + i + ' de ' + n, W - 40, H - 24, {align:'right'}); }
+  doc.save('agenda_tableros_2027-1.pdf');
+}
 const esc = s => String(s??'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 let clave = ''; try { clave = sessionStorage.getItem('clave_tablero') || ''; } catch(e){}
 document.getElementById('f').onsubmit = e => { e.preventDefault(); clave = document.getElementById('clave').value.trim(); cargar(); };
@@ -45,7 +94,7 @@ async function cargar(){
   if(error || !data?.ok){ document.getElementById('msg').textContent = error ? 'Error de conexión.' : 'Clave incorrecta.'; return; }
   try { sessionStorage.setItem('clave_tablero', clave); } catch(e){}
   const R = data.reservas, P = data.pendientes;
-  let h = `<div class="card"><div class="row" style="justify-content:space-between"><h2>Reservas (${R.length})</h2><div class="row"><span class="muted">Se actualiza cada minuto</span><button id="csv">Descargar CSV</button></div></div>
+  let h = `<div class="card"><div class="row" style="justify-content:space-between"><h2>Reservas (${R.length})</h2><div class="row"><span class="muted">Se actualiza cada minuto</span><button id="pdf">Descargar PDF</button><button id="csv">Descargar CSV</button></div></div>
     <table><tr><th>Día</th><th>Hora</th><th>Asignatura</th><th>Código</th><th>Nombre</th><th>Correo</th></tr>`;
   for(const r of R) h += `<tr><td>${DIAS[r.slot.slice(0,10)]}</td><td>${h12(r.slot)}</td><td>${esc(r.asignatura)}</td><td>${esc(r.codigo)}</td><td>${esc(r.nombre)}</td><td>${esc(r.correo)}</td></tr>`;
   if(!R.length) h += `<tr><td colspan="6" class="muted">Aún no hay reservas.</td></tr>`;
@@ -54,6 +103,7 @@ async function cargar(){
   if(!P.length) h += `<tr><td colspan="4" class="muted">Todos reservaron.</td></tr>`;
   h += `</table></div>`;
   document.getElementById('app').innerHTML = h;
+  document.getElementById('pdf').onclick = () => generarPdf(R, P);
   document.getElementById('csv').onclick = () => {
     const filas = [['dia','hora','asignatura','codigo','nombre','correo'], ...R.map(r=>[r.slot.slice(0,10), r.slot.slice(11), r.asignatura, r.codigo, r.nombre, r.correo])];
     const txt = '﻿' + filas.map(f=>f.map(x=>`"${String(x).replace(/"/g,'""')}"`).join(';')).join('\r\n');
