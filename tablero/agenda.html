@@ -66,7 +66,7 @@ function generarPdf(R, P){
       head:[['Hora','Asignatura','Tema','Candidato','Código']],
       body: filas.map(r => [h12(r.slot)+' – '+fin(r.slot), r.asignatura, TEMAS[r.asignatura]||'', r.nombre, r.codigo]),
       styles:{fontSize:8.5, cellPadding:4, valign:'middle'}, headStyles:{fillColor:azul},
-      columnStyles:{0:{cellWidth:92},1:{cellWidth:95},3:{cellWidth:115},4:{cellWidth:48}}});
+      columnStyles:{0:{cellWidth:112},1:{cellWidth:92},3:{cellWidth:112},4:{cellWidth:48}}});
     y = doc.lastAutoTable.finalY + 24;
   }
   if (!R.length) { doc.setFontSize(10); doc.text('Aún no hay reservas.', 40, y); y += 24; }
