@@ -1,6 +1,6 @@
 -- ============================================================
 --  SEA Matemáticas UIS · Reserva de sesiones de tutoría en tablero
---  Convocatoria de tutores 2027-1 (10 y 11 de noviembre de 2026)
+--  Convocatoria de tutores 2027-1 (10, 11 y 12 de noviembre de 2026)
 --
 --  Las tablas no tienen políticas RLS: el público (anon) NO puede leerlas
 --  ni escribirlas directamente. Todo pasa por funciones SECURITY DEFINER:
@@ -38,12 +38,16 @@ alter table tablero_reservas   enable row level security;
 alter table tablero_config     enable row level security;
 revoke all on tablero_candidatos, tablero_reservas, tablero_config from anon, authenticated;
 
--- Franjas válidas: martes 10 y miércoles 11, cada 20 min de 07:00 a 15:40
+-- Franjas válidas (cada 20 min, sesión de 15), según disponibilidad del evaluador:
+--   martes 10: 10:00-12:00 · miércoles 11: 12:00-14:00 · jueves 12: 9:00-14:00
 create or replace function tablero_slots() returns setof text
 language sql immutable as $$
   select to_char(d + make_interval(mins => m), 'YYYY-MM-DD"T"HH24:MI')
-  from unnest(array['2026-11-10'::timestamp, '2026-11-11'::timestamp]) d,
-       generate_series(420, 940, 20) m
+  from (values ('2026-11-10'::timestamp, 600, 700),
+               ('2026-11-11'::timestamp, 720, 820),
+               ('2026-11-12'::timestamp, 540, 820)) v(d, ini, ult),
+       generate_series(ini, ult, 20) m
+  order by 1
 $$;
 
 create or replace function tablero_info(p_token text) returns json
