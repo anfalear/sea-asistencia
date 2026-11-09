@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Agenda de tableros · SEA</title>
+<style>
+:root{--bg:#f0f4f8;--surface:#fff;--primary:#3a5bd9;--text:#1a202c;--muted:#64748b;--border:#e2e8f0;--amber:#b45309;--amber-bg:#fef3c7;--head:#1b2340;--red:#dc2626}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1424;--surface:#182038;--primary:#7b93f0;--text:#e6e9f2;--muted:#9aa4bd;--border:#2b3556;--amber:#fbbf24;--amber-bg:#3a2c0c;--head:#0a0e1a;--red:#f87171}}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
+header{background:var(--head);color:#fff;padding:16px}
+header h1{max-width:980px;margin:0 auto;font-size:1.2rem}
+main{max-width:980px;margin:0 auto;padding:20px 16px 40px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:16px;overflow-x:auto}
+h2{font-size:1.05rem;margin-bottom:10px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--border);white-space:nowrap}
+th{color:var(--muted);font-weight:600;font-size:.8rem;text-transform:uppercase}
+input,button{font:inherit;padding:8px 12px;border-radius:7px;border:1px solid var(--border);background:var(--surface);color:var(--text)}
+button{cursor:pointer;border-color:var(--primary);color:var(--primary)}
+.pend td{color:var(--amber)}
+.muted{color:var(--muted);font-size:.9rem}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.err{color:var(--red)}
+</style>
+</head>
+<body>
+<header><h1>Agenda de sesiones de tablero · Convocatoria 2027-1</h1></header>
+<main id="app">
+  <div class="card"><form id="f" class="row"><input id="clave" type="password" placeholder="Clave de la agenda" autocomplete="current-password"><button>Ver agenda</button></form><p id="msg" class="err"></p></div>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+const db = supabase.createClient('https://tnrvxfsvmlzdjyhnedsm.supabase.co', 'sb_publishable_K0y7WopwN4jD59qZCZ5AmA_9bCShLj7');
+const DIAS = {'2026-11-10':'Martes 10 nov','2026-11-11':'Miércoles 11 nov'};
+const esc = s => String(s??'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let clave = ''; try { clave = sessionStorage.getItem('clave_tablero') || ''; } catch(e){}
+document.getElementById('f').onsubmit = e => { e.preventDefault(); clave = document.getElementById('clave').value.trim(); cargar(); };
+function h12(s){ const [h,m]=s.slice(11).split(':').map(Number); return `${h>12?h-12:h}:${String(m).padStart(2,'0')} ${h<12?'a. m.':h===12?'m.':'p. m.'}`; }
+async function cargar(){
+  if(!clave) return;
+  const {data, error} = await db.rpc('tablero_agenda', {p_clave: clave});
+  if(error || !data?.ok){ document.getElementById('msg').textContent = error ? 'Error de conexión.' : 'Clave incorrecta.'; return; }
+  try { sessionStorage.setItem('clave_tablero', clave); } catch(e){}
+  const R = data.reservas, P = data.pendientes;
+  let h = `<div class="card"><div class="row" style="justify-content:space-between"><h2>Reservas (${R.length})</h2><div class="row"><span class="muted">Se actualiza cada minuto</span><button id="csv">Descargar CSV</button></div></div>
+    <table><tr><th>Día</th><th>Hora</th><th>Asignatura</th><th>Código</th><th>Nombre</th><th>Correo</th></tr>`;
+  for(const r of R) h += `<tr><td>${DIAS[r.slot.slice(0,10)]}</td><td>${h12(r.slot)}</td><td>${esc(r.asignatura)}</td><td>${esc(r.codigo)}</td><td>${esc(r.nombre)}</td><td>${esc(r.correo)}</td></tr>`;
+  if(!R.length) h += `<tr><td colspan="6" class="muted">Aún no hay reservas.</td></tr>`;
+  h += `</table></div><div class="card"><h2>Sin reservar (${P.length})</h2><table><tr><th>Asignatura</th><th>Código</th><th>Nombre</th><th>Correo</th></tr>`;
+  for(const p of P) h += `<tr class="pend"><td>${esc(p.asignatura)}</td><td>${esc(p.codigo)}</td><td>${esc(p.nombre)}</td><td>${esc(p.correo)}</td></tr>`;
+  if(!P.length) h += `<tr><td colspan="4" class="muted">Todos reservaron.</td></tr>`;
+  h += `</table></div>`;
+  document.getElementById('app').innerHTML = h;
+  document.getElementById('csv').onclick = () => {
+    const filas = [['dia','hora','asignatura','codigo','nombre','correo'], ...R.map(r=>[r.slot.slice(0,10), r.slot.slice(11), r.asignatura, r.codigo, r.nombre, r.correo])];
+    const txt = '﻿' + filas.map(f=>f.map(x=>`"${String(x).replace(/"/g,'""')}"`).join(';')).join('\r\n');
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([txt],{type:'text/csv'})); a.download = 'agenda_tableros_2027-1.csv'; a.click();
+  };
+}
+cargar(); setInterval(cargar, 60000);
+</script>
+</body>
+</html>

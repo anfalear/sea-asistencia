@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Sesión de tablero · SEA</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%233a5bd9'/><text x='4' y='23' font-family='sans-serif' font-weight='800' font-size='14' fill='white'>SEA</text></svg>">
+<style>
+:root{
+  --bg:#f0f4f8;--surface:#fff;--primary:#3a5bd9;--primary-dark:#2d47b0;--primary-light:#eef1fb;
+  --text:#1a202c;--muted:#64748b;--border:#e2e8f0;--green:#16a34a;--green-bg:#dcfce7;
+  --red:#dc2626;--red-bg:#fee2e2;--amber:#b45309;--amber-bg:#fef3c7;--head:#1b2340;
+  --shadow:0 4px 12px rgba(0,0,0,.08);--r:10px;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0f1424;--surface:#182038;--primary:#7b93f0;--primary-dark:#9aaef5;--primary-light:#222c4d;
+  --text:#e6e9f2;--muted:#9aa4bd;--border:#2b3556;--green:#4ade80;--green-bg:#123322;
+  --red:#f87171;--red-bg:#3a1717;--amber:#fbbf24;--amber-bg:#3a2c0c;--head:#0a0e1a;--shadow:none;
+}}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
+header{background:var(--head);color:#fff;padding:18px 16px}
+header .wrap{max-width:860px;margin:0 auto}
+header small{opacity:.75;letter-spacing:.04em;text-transform:uppercase;font-size:.75rem}
+header h1{font-size:1.35rem;font-weight:700;margin-top:2px}
+main{max-width:860px;margin:0 auto;padding:20px 16px 48px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);padding:20px;margin-bottom:18px}
+h2{font-size:1.1rem;margin-bottom:4px}
+.muted{color:var(--muted);font-size:.92rem}
+.info{display:grid;gap:6px;margin-top:10px;font-size:.93rem}
+.info b{font-weight:600}
+.tema{display:inline-block;background:var(--primary-light);color:var(--primary-dark);border-radius:6px;padding:2px 8px;font-size:.88rem;margin-top:6px}
+.estado{margin:14px 0;padding:12px 14px;border-radius:8px;font-size:.95rem}
+.estado.ok{background:var(--green-bg);color:var(--green)}
+.estado.pend{background:var(--amber-bg);color:var(--amber)}
+.dias{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:10px}
+@media (max-width:560px){.dias{grid-template-columns:1fr}}
+.dia h3{font-size:.95rem;margin-bottom:8px}
+.slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:6px}
+.slot{font:inherit;font-size:.9rem;padding:8px 4px;border-radius:7px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer;transition:.15s}
+.slot:hover:not(:disabled){border-color:var(--primary);background:var(--primary-light)}
+.slot:disabled{cursor:not-allowed;color:var(--muted);text-decoration:line-through;opacity:.6}
+.slot.mia{background:var(--primary);border-color:var(--primary);color:#fff;font-weight:600;text-decoration:none;opacity:1}
+.vacio{color:var(--muted);font-size:.88rem}
+.acciones{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}
+.btn{font:inherit;font-size:.9rem;padding:7px 14px;border-radius:7px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer}
+.btn.rojo{color:var(--red);border-color:var(--red)}
+.leyenda{display:flex;gap:16px;flex-wrap:wrap;font-size:.83rem;color:var(--muted);margin-top:10px}
+.leyenda span::before{content:'';display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px;border:1px solid var(--border)}
+.leyenda .l-mia::before{background:var(--primary);border-color:var(--primary)}
+.leyenda .l-ocu::before{opacity:.5;background:var(--border)}
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--head);color:#fff;padding:10px 18px;border-radius:8px;font-size:.92rem;opacity:0;transition:.25s;pointer-events:none;max-width:calc(100% - 32px)}
+#toast.show{opacity:1}
+.err{color:var(--red)}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <small>SEA-Matemáticas · Convocatoria de tutores 2027-1</small>
+  <h1>Reserva de la sesión de tutoría en tablero</h1>
+</div></header>
+<main id="app"><div class="card"><p class="muted">Cargando…</p></div></main>
+<div id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+const db = supabase.createClient('https://tnrvxfsvmlzdjyhnedsm.supabase.co', 'sb_publishable_K0y7WopwN4jD59qZCZ5AmA_9bCShLj7');
+const token = new URLSearchParams(location.search).get('t');
+const TEMAS = {
+  'Cálculo I': 'Optimización',
+  'Cálculo II': 'Aplicaciones de la integral',
+  'Cálculo III': 'El jacobiano en el cambio de variables de integrales dobles',
+  'Álgebra Lineal II': 'Valores y vectores propios',
+  'Geometría Euclidiana': 'Criterios de semejanza de triángulos',
+  'Teoría de Conjuntos': 'Equicardinalidad; cuándo dos conjuntos numerables tienen el mismo cardinal',
+  'Teoría de Números': 'Funciones multiplicativas',
+  'Análisis Matemático I': 'Convergencia uniforme'
+};
+const DIAS = {'2026-11-10':'Martes 10 de noviembre','2026-11-11':'Miércoles 11 de noviembre'};
+const ERR = {
+  enlace_invalido:'El enlace no es válido. Use el enlace que llegó a su correo.',
+  ocupado:'Otra persona acaba de tomar esa franja. Elija otra.',
+  cruce_horario:'Esa franja cruza con su horario de clases.',
+  muy_tarde:'Las reservas se hacen con al menos 2 horas de anticipación.',
+  asignatura:'Asignatura no válida.', franja:'Franja no válida.'
+};
+let S = null;
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function hora(slot){ const [h,m]=slot.slice(11).split(':').map(Number); const ap=h<12?'a. m.':(h===12?'m.':'p. m.'); const hh=h>12?h-12:h; return `${hh}:${String(m).padStart(2,'0')} ${ap}`; }
+function fin(slot){ const [h,m]=slot.slice(11).split(':').map(Number); const t=h*60+m+15; return hora(slot.slice(0,11)+String(Math.floor(t/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0')); }
+function largo(slot){ return `${DIAS[slot.slice(0,10)]}, ${hora(slot)} a ${fin(slot)}`; }
+function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),3800); }
+function limite(){ // ahora + 2 h, en hora de Colombia, mismo formato que los slots
+  const [d,h]=S.ahora.split('T'); const dt=new Date(d+'T'+h+':00Z'); dt.setUTCMinutes(dt.getUTCMinutes()+120);
+  return dt.toISOString().slice(0,16);
+}
+
+async function cargar(){
+  if(!token){ $('#app').innerHTML = `<div class="card"><p class="err">${ERR.enlace_invalido}</p></div>`; return; }
+  const {data, error} = await db.rpc('tablero_info', {p_token: token});
+  if(error || !data?.ok){ $('#app').innerHTML = `<div class="card"><p class="err">${error ? 'No fue posible conectar. Intente de nuevo en un momento.' : ERR[data.error]}</p></div>`; return; }
+  S = data; pintar();
+}
+
+function pintar(){
+  const lim = limite();
+  const ocup = new Set(S.ocupados);
+  const propias = Object.entries(S.mias);
+  let h = `<div class="card">
+    <h2>Hola, ${esc(S.nombre.split(' ')[0])}</h2>
+    <p class="muted">Usted superó la prueba escrita y está citado(a) a la sesión de tutoría en tablero${S.asignaturas.length>1?' de cada asignatura':''}. Elija la franja que mejor le convenga.</p>
+    <div class="info">
+      <div><b>Duración:</b> 15 minutos (apertura 2 min, desarrollo guiado 7 min, verificación y cierre 2 min, preguntas de los evaluadores 4 min). Preséntese 10 minutos antes.</div>
+      <div><b>Formato:</b> tutoría simulada con un grupo de estudiantes y dos profesores evaluadores. No es una clase magistral: se espera que medie el aprendizaje del grupo.</div>
+      <div><b>Lugar:</b> se confirmará por correo.</div>
+      <div><b>Franjas:</b> solo aparecen las que no cruzan con su horario de clases. Puede cambiar o cancelar su reserva hasta 2 horas antes.</div>
+    </div>
+  </div>`;
+  for(const a of S.asignaturas){
+    const mia = S.mias[a];
+    const otras = new Set(propias.filter(([x])=>x!==a).map(([,s])=>s));
+    h += `<div class="card" data-asig="${esc(a)}">
+      <h2>${esc(a)}</h2>
+      <span class="tema">Tema: ${esc(TEMAS[a]||'')}</span>
+      ${mia ? `<div class="estado ok">✓ Reservado: <b>${largo(mia)}</b></div>`
+            : `<div class="estado pend">Aún no ha elegido franja.</div>`}
+      <div class="dias">`;
+    for(const [d,nom] of Object.entries(DIAS)){
+      const lista = S.permitidos.filter(s=>s.startsWith(d));
+      h += `<div class="dia"><h3>${nom}</h3>`;
+      if(!lista.length){ h += `<p class="vacio">Sin franjas compatibles con su horario.</p>`; }
+      else {
+        h += `<div class="slots">`;
+        for(const s of lista){
+          const esMia = s===mia, bloq = !esMia && (ocup.has(s) || otras.has(s) || s < lim);
+          const tit = esMia ? 'Su reserva' : otras.has(s) ? 'Reservada para su otra asignatura' : ocup.has(s) ? 'Ocupada' : s<lim ? 'Ya no disponible' : 'Disponible';
+          h += `<button class="slot${esMia?' mia':''}" data-slot="${s}" ${bloq||esMia?'disabled':''} title="${tit}">${hora(s)}</button>`;
+        }
+        h += `</div>`;
+      }
+      h += `</div>`;
+    }
+    h += `</div>
+      <div class="leyenda"><span class="l-mia">Su reserva</span><span class="l-ocu">Ocupada o no disponible</span></div>
+      ${mia && mia>=lim ? `<div class="acciones"><button class="btn rojo" data-cancel="${esc(a)}">Cancelar reserva</button></div>` : ''}
+    </div>`;
+  }
+  $('#app').innerHTML = h;
+  document.querySelectorAll('.slot:not(:disabled)').forEach(b => b.onclick = () => reservar(b.closest('[data-asig]').dataset.asig, b.dataset.slot, b));
+  document.querySelectorAll('[data-cancel]').forEach(b => b.onclick = () => cancelar(b.dataset.cancel, b));
+}
+
+async function reservar(a, slot, btn){
+  const previa = S.mias[a];
+  if(previa && !confirmarInline(btn, `¿Cambiar a ${hora(slot)}?`)) return;
+  btn.disabled = true; btn.textContent = '…';
+  const {data, error} = await db.rpc('tablero_reservar', {p_token: token, p_asignatura: a, p_slot: slot});
+  if(error || !data?.ok){ toast(error ? 'Error de conexión. Intente de nuevo.' : ERR[data.error] || 'No se pudo reservar.'); }
+  else toast(`Reservado: ${a}, ${largo(slot)}`);
+  await cargar();
+}
+async function cancelar(a, btn){
+  if(!confirmarInline(btn, '¿Seguro? Toque otra vez para cancelar')) return;
+  btn.disabled = true;
+  const {error} = await db.rpc('tablero_cancelar', {p_token: token, p_asignatura: a});
+  toast(error ? 'Error de conexión.' : 'Reserva cancelada.');
+  await cargar();
+}
+// Confirmación en dos toques (sin diálogos del navegador)
+function confirmarInline(btn, msg){
+  if(btn.dataset.armado){ return true; }
+  const txt = btn.textContent; btn.dataset.armado = '1'; btn.textContent = msg;
+  if(btn.classList.contains('slot')) btn.style.gridColumn = '1 / -1';
+  setTimeout(()=>{ if(btn.isConnected){ delete btn.dataset.armado; btn.textContent = txt; btn.style.gridColumn=''; } }, 4000);
+  return false;
+}
+cargar();
+setInterval(()=>{ if(S && !document.querySelector('[data-armado]')) cargar(); }, 60000);
+</script>
+</body>
+</html>
