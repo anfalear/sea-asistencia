@@ -38,7 +38,7 @@ const DIAS = {'2026-11-10':'Martes 10 nov','2026-11-11':'Miércoles 11 nov'};
 const esc = s => String(s??'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 let clave = ''; try { clave = sessionStorage.getItem('clave_tablero') || ''; } catch(e){}
 document.getElementById('f').onsubmit = e => { e.preventDefault(); clave = document.getElementById('clave').value.trim(); cargar(); };
-function h12(s){ const [h,m]=s.slice(11).split(':').map(Number); return `${h>12?h-12:h}:${String(m).padStart(2,'0')} ${h<12?'a. m.':h===12?'m.':'p. m.'}`; }
+function h12(s){ const [h,m]=s.slice(11).split(':').map(Number); return `${h>12?h-12:h}:${String(m).padStart(2,'0')} ${h<12?'a. m.':(h===12&&m===0)?'m.':'p. m.'}`; }
 async function cargar(){
   if(!clave) return;
   const {data, error} = await db.rpc('tablero_agenda', {p_clave: clave});

@@ -88,7 +88,7 @@ const ERR = {
 let S = null;
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-function hora(slot){ const [h,m]=slot.slice(11).split(':').map(Number); const ap=h<12?'a. m.':(h===12?'m.':'p. m.'); const hh=h>12?h-12:h; return `${hh}:${String(m).padStart(2,'0')} ${ap}`; }
+function hora(slot){ const [h,m]=slot.slice(11).split(':').map(Number); const ap=h<12?'a. m.':(h===12&&m===0?'m.':'p. m.'); const hh=h>12?h-12:h; return `${hh}:${String(m).padStart(2,'0')} ${ap}`; }
 function fin(slot){ const [h,m]=slot.slice(11).split(':').map(Number); const t=h*60+m+15; return hora(slot.slice(0,11)+String(Math.floor(t/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0')); }
 function largo(slot){ return `${DIAS[slot.slice(0,10)]}, ${hora(slot)} a ${fin(slot)}`; }
 function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),3800); }
